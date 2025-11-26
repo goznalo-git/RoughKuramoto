@@ -40,7 +40,7 @@ with timer():
 
     for it in range(M):
 
-        if it % 2 == 0:
+        if it % 10 == 0:
             print(it)
 
         seed = np.random.randint(0, 1e8)

@@ -13,10 +13,14 @@
 
 L=125
 Ksto=1
-Kcol=10
+Kcol=5
 M=500
 
+
 ## Large coupling
+
+echo "## Running simulations. Date: `date`"
+echo "Parameters: $L $Ksto $Kcol $M" 
 
 # Time dependent
 nohup python -u int_sto.py 0 $L $Ksto $M > Logs/out_sto_0.log 2>&1 &

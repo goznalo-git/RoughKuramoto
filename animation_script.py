@@ -4,8 +4,8 @@ import matplotlib.animation as animation
 import random
 
 # --- CONFIGURATION ---
-# Choose: 'ballistic', 'eden', or 'random'
-SIMULATION_MODE = 'eden' 
+# Choose: 'ballistic', 'eden', 'relaxation' or 'random'
+SIMULATION_MODE = 'relaxation'
 
 # Saving Settings
 SAVE_ANIMATION = True          # Set to True to save a file, False to just show it
@@ -23,45 +23,65 @@ class GrowthSimulator:
         self.mode = mode
         self.width = width
         self.height = height
-        # Unified grid and height map for all deposition models
+        # Unified grid and height map
         self.grid = np.zeros((height, width), dtype=int)
         self.heights = np.zeros(width, dtype=int)
         self.cmap = 'magma' 
 
     def step(self):
-        # 1. Pick a random column to drop a block
+        # 1. Pick a random column
         i = random.randint(0, self.width - 1)
         
-        # 2. Identify neighbor heights (Periodic/Wrap-around boundaries)
-        left_h = self.heights[(i - 1) % self.width]
-        right_h = self.heights[(i + 1) % self.width]
-        current_h = self.heights[i]
+        # 2. Identify neighbors (Periodic boundaries)
+        l_idx = (i - 1) % self.width
+        r_idx = (i + 1) % self.width
         
-        # 3. Determine New Height based on the rules
+        l_h = self.heights[l_idx]
+        r_h = self.heights[r_idx]
+        c_h = self.heights[i] # Current height
+        
+        target_idx = i
+        new_h = 0
+
+        # --- LOGIC SELECTION ---
+
         if self.mode == 'random':
-            # Rule: Independent Columns (Tetris with no friction)
-            # The block just lands on top of the current column.
-            new_h = current_h + 1
+            # Pure pile-up
+            target_idx = i
+            new_h = c_h + 1
 
         elif self.mode == 'ballistic':
-            # Rule: Sticky Sides (Standard Ballistic Deposition)
-            # The block sticks if it touches the TOP of the current column
-            # OR the SIDE of a neighbor.
-            # If neighbor is height H, we stick at H.
-            new_h = max(current_h + 1, left_h, right_h)
+            # Sticky Sides (KPZ)
+            target_idx = i
+            new_h = max(c_h + 1, l_h, r_h)
 
         elif self.mode == 'eden':
-            # Rule: Sticky Corners (Your requested variant)
-            # The block sticks if it touches the TOP of the current column
-            # OR the CORNER of a neighbor.
-            # If neighbor is height H, sticking to its corner puts us at H + 1.
-            new_h = max(current_h + 1, left_h + 1, right_h + 1)
+            # Sticky Corners (Fastest Growth)
+            target_idx = i
+            new_h = max(c_h + 1, l_h + 1, r_h + 1)
+
+        elif self.mode == 'relaxation':
+            # Family Model (Surface Diffusion / Edwards-Wilkinson)
+            # The particle lands at i, but slides to the lowest neighbor.
+            
+            min_h = min(c_h, l_h, r_h)
+            
+            # Logic: If a neighbor is strictly lower, move there.
+            # (Prioritize neighbors over current column to maximize smoothing)
+            if l_h == min_h:
+                target_idx = l_idx
+            elif r_h == min_h:
+                target_idx = r_idx
+            else:
+                target_idx = i
+            
+            # In relaxation, we just pile up on the chosen spot (no side sticking)
+            new_h = self.heights[target_idx] + 1
         
-        # 4. Update the grid if we are within bounds
+        # 3. Update the Grid
         if new_h < self.height:
-            self.heights[i] = new_h
-            # Draw the block (inverted y-axis for matrix indexing)
-            self.grid[self.height - new_h, i] = 1
+            self.heights[target_idx] = new_h
+            self.grid[self.height - new_h, target_idx] = 1
 
     def get_data(self):
         return self.grid
