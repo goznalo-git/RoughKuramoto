@@ -74,3 +74,37 @@ def compute_height_height_correlations(phases: np.ndarray) -> np.ndarray:
         heightheight[:,r] = np.mean((np.roll(phases, r, axis=1) - phases)**2, axis=1)
 
     return heightheight
+
+
+
+
+def compute_structure_factor(phases: np.ndarray) -> np.ndarray:
+    """
+    Compute the structure factor function S(k, t) for a
+    Kuramoto–Sakaguchi simulation.
+
+    The structure factor is defined as:
+        S(k, t) = < |\hat(h)(k, t)|^2 >
+    where the average is taken over frequency index k at fixed time t.
+
+    Parameters
+    ----------
+    phases : ndarray
+        Array of unwrapped phases with shape (Nt, N), interpreted as the
+        interface height h(x, t).
+
+    Returns
+    -------
+    structurefactor : ndarray of shape (Nt, N)
+        The correlation S(k, t) for frequencies k = 0, 1, ..., N-1 at each time t.
+        The k-th column corresponds to frequency k.
+    """
+    N = phases.shape[1]
+
+    # Spatial Fourier transform along the lattice direction (axis=1)
+    hhat = np.fft.fft(phases, axis=1)
+
+    # Power spectrum (structure factor). Divide by N for the common FFT normalization.
+    structurefactor = (np.abs(hhat) ** 2) / N
+    
+    return structurefactor

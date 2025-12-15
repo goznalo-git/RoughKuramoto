@@ -11,10 +11,10 @@
 # 4th argument: M (number of seeds sampled)
 ###########################################################################
 
-L=125
+L=250
 Ksto=1
-Kcol=5
-M=500
+Kcol=10
+M=200
 
 
 ## Large coupling
@@ -23,8 +23,8 @@ echo "## Running simulations. Date: `date`"
 echo "Parameters: $L $Ksto $Kcol $M" 
 
 # Time dependent
-nohup python -u int_sto.py 0 $L $Ksto $M > Logs/out_sto_0.log 2>&1 &
-nohup python -u int_sto.py atan5 $L $Ksto $M > Logs/out_sto_atan5.log 2>&1 &
+# nohup python -u int_sto.py 0 $L $Ksto $M > Logs/out_sto_0.log 2>&1 &
+# nohup python -u int_sto.py atan5 $L $Ksto $M > Logs/out_sto_atan5.log 2>&1 &
 
 # Columnar
 nohup python -u int_col.py 0 $L $Kcol $M  > Logs/out_col_0.log 2>&1 &
