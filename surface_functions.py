@@ -76,6 +76,37 @@ def compute_height_height_correlations(phases: np.ndarray) -> np.ndarray:
     return heightheight
 
 
+def compute_phase_covariance(phases: np.ndarray) -> np.ndarray:
+    """
+    Compute the phase covariance function C(r, t) for a Kuramoto–Sakaguchi simulation.
+
+    The phase covariance is defined as:
+        C(r, t) = < φ(x, t) φ(x + r, t) >  -  ( < φ(x, t) > )^2
+    where <...> denotes an average over the spatial index x at fixed time t.
+
+    Parameters
+    ----------
+    phases : ndarray
+        Array of (unwrapped) phases with shape (Nt, N), interpreted as φ(x, t).
+
+    Returns
+    -------
+    cov : ndarray of shape (Nt, N)
+        The covariance C(r, t) for separations r = 0, 1, ..., N-1 at each time t.
+        The r-th column corresponds to separation r.
+    """
+    Nt, N = phases.shape
+
+    # Spatial mean at each time: <φ(x,t)>
+    mean_phi_t = np.mean(phases, axis=1)  # shape (Nt,)
+
+    phase_covariance = np.empty((Nt, N), dtype=float)
+    for r in range(N):
+        # <φ(x,t) φ(x+r,t)>
+        prod_mean = np.mean(phases * np.roll(phases, r, axis=1), axis=1)
+        phase_covariance[:, r] = prod_mean - mean_phi_t**2
+
+    return phase_covariance
 
 
 def compute_structure_factor(phases: np.ndarray) -> np.ndarray:
