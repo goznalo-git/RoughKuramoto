@@ -19,8 +19,8 @@ print("Columnar")
 # 1D ring
 L = int(sys.argv[2])
 K = float(sys.argv[3])
-T = 200000  # a bit above 100000 to allow for the next log-scale datapoint
-Nt = 20000000
+T = 20000  # a bit above 100000 to allow for the next log-scale datapoint
+Nt = 100*T
 startsampling = 100
 multsampling = 1.6
 M = int(sys.argv[4])

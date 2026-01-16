@@ -1,6 +1,5 @@
 import numpy as np
-
-
+from typing import Iterable, Tuple, Optional
 
 def compute_surface_variance(phases: np.ndarray) -> np.ndarray:
     """
@@ -76,6 +75,38 @@ def compute_height_height_correlations(phases: np.ndarray) -> np.ndarray:
     return heightheight
 
 
+def compute_structure_factor(phases: np.ndarray) -> np.ndarray:
+    """
+    Compute the structure factor function S(k, t) for a
+    Kuramoto–Sakaguchi simulation.
+
+    The structure factor is defined as:
+        S(k, t) = < |\hat(h)(k, t)|^2 >
+    where the average is taken over frequency index k at fixed time t.
+
+    Parameters
+    ----------
+    phases : ndarray
+        Array of unwrapped phases with shape (Nt, N), interpreted as the
+        interface height h(x, t).
+
+    Returns
+    -------
+    structurefactor : ndarray of shape (Nt, N)
+        The correlation S(k, t) for frequencies k = 0, 1, ..., N-1 at each time t.
+        The k-th column corresponds to frequency k.
+    """
+    N = phases.shape[1]
+
+    # Spatial Fourier transform along the lattice direction (axis=1)
+    hhat = np.fft.fft(phases, axis=1)
+
+    # Power spectrum (structure factor). Divide by N for the common FFT normalization.
+    structurefactor = (np.abs(hhat) ** 2) / N
+    
+    return structurefactor
+
+
 def compute_phase_covariance(phases: np.ndarray) -> np.ndarray:
     """
     Compute the phase covariance function C(r, t) for a Kuramoto–Sakaguchi simulation.
@@ -109,33 +140,103 @@ def compute_phase_covariance(phases: np.ndarray) -> np.ndarray:
     return phase_covariance
 
 
-def compute_structure_factor(phases: np.ndarray) -> np.ndarray:
+def compute_rescaled_phases(
+    phases: np.ndarray,
+    t0: int,
+    deltaTs: Iterable[int],
+    beta: float,
+) -> np.ndarray:
     """
-    Compute the structure factor function S(k, t) for a
-    Kuramoto–Sakaguchi simulation.
-
-    The structure factor is defined as:
-        S(k, t) = < |\hat(h)(k, t)|^2 >
-    where the average is taken over frequency index k at fixed time t.
+    Compute rescaled phases (fluctuations) as in:
+        ϕ_j(Δt) = [δφ_j(t0 + Δt) - δφ_j(t0)] / (Δt)^β
+    where δφ_j(t) = φ_j(t) - \bar{φ}(t) and \bar{φ}(t) is the spatial mean at time t.
 
     Parameters
     ----------
-    phases : ndarray
-        Array of unwrapped phases with shape (Nt, N), interpreted as the
-        interface height h(x, t).
+    phases : ndarray, shape (Nt, N)
+        Unwrapped phases φ_j(t).
+    t0 : int
+        Reference time index.
+    deltas : iterable of int
+        Time lags Δt (positive integers) with t0 + Δt < Nt.
+    beta : float
+        Rescaling exponent.
 
     Returns
     -------
-    structurefactor : ndarray of shape (Nt, N)
-        The correlation S(k, t) for frequencies k = 0, 1, ..., N-1 at each time t.
-        The k-th column corresponds to frequency k.
+    varphi : ndarray, shape (n_deltas, N)
+        Rescaled phases ϕ_j for each Δt. Row i corresponds to deltas[i].
     """
-    N = phases.shape[1]
+    Nt, N = phases.shape
+    deltaTs = np.asarray(list(deltaTs), dtype=int)
 
-    # Spatial Fourier transform along the lattice direction (axis=1)
-    hhat = np.fft.fft(phases, axis=1)
+    if t0 < 0 or t0 >= Nt:
+        raise ValueError("t0 must be a valid time index.")
+    if np.any(deltaTs <= 0):
+        raise ValueError("All Δt must be positive integers.")
+    if np.any(t0 + deltaTs >= Nt):
+        raise ValueError("Each Δt must satisfy t0 + Δt < Nt.")
 
-    # Power spectrum (structure factor). Divide by N for the common FFT normalization.
-    structurefactor = (np.abs(hhat) ** 2) / N
-    
-    return structurefactor
+    # δφ(t) = φ(t) - mean_x φ(t)
+    mean_t = phases.mean(axis=1, keepdims=True)   # (Nt, 1)
+    dphi = phases - mean_t                        # (Nt, N)
+
+    dphi_t0 = dphi[t0]                            # (N,)
+
+    varphi = np.empty((len(deltaTs), N), dtype=float)
+    for i, Deltat in enumerate(deltaTs):
+        varphi[i] = (dphi[t0 + Deltat] - dphi_t0) / (Deltat ** beta)
+    return varphi
+
+
+def compute_fluctuation_pdf(
+    varphi: np.ndarray,
+    bins: int | np.ndarray = 100,
+    value_range: Optional[Tuple[float, float]] = None,
+    axis: int = -1,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Compute the PDF of the rescaled phase fluctuations ϕ.
+
+    Parameters
+    ----------
+    varphi : ndarray
+        Array of rescaled phases ϕ. Typically shape (n_deltas, N),
+        but any shape is allowed; the PDF is computed along `axis`.
+    bins : int or ndarray, default 100
+        Histogram bin specification passed to np.histogram.
+    value_range : (min, max) or None
+        Optional common range for the histogram.
+    axis : int, default -1
+        Axis along which to compute the PDF (e.g. spatial index).
+
+    Returns
+    -------
+    bin_centers : ndarray, shape (nbins,)
+        Centers of the histogram bins.
+    pdf : ndarray
+        Probability density function(s). If `varphi` has shape
+        (n_deltas, N) and axis = -1, the result has shape (n_deltas, nbins).
+    """
+    varphi = np.asarray(varphi)
+
+    # Move the target axis to the last position
+    data = np.moveaxis(varphi, axis, -1)
+    leading_shape = data.shape[:-1]
+
+    # Flatten all samples to define common bins (important for collapse tests)
+    flat = data.reshape(-1)
+
+    if value_range is None:
+        _, edges = np.histogram(flat, bins=bins, density=True)
+    else:
+        _, edges = np.histogram(flat, bins=bins, range=value_range, density=True)
+
+    bin_centers = 0.5 * (edges[:-1] + edges[1:])
+
+    # Compute PDFs slice by slice
+    pdf = np.empty((*leading_shape, len(bin_centers)), dtype=float)
+    for idx in np.ndindex(leading_shape):
+        pdf[idx], _ = np.histogram(data[idx], bins=edges, density=True)
+
+    return bin_centers, pdf
