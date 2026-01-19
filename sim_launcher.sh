@@ -17,7 +17,7 @@ source ../scientific_kernel/bin/activate
 L=250
 Ksto=1
 Kcol=20
-M=350
+M=300
 
 
 ## Large coupling
@@ -31,7 +31,7 @@ echo "Parameters: $L $Ksto $Kcol $M"
 
 # Columnar (requires a much higher K to see saturation)
 nohup python -u int_col.py atan5 $L $Kcol $M  > Logs/Columnar/out_atan5_${L}_${Kcol}_${M}.log 2>&1 &
-sleep 5
+sleep 60
 nohup python -u int_col.py 0 $L $Kcol $M  > Logs/Columnar/out_0_${L}_${Kcol}_${M}.log 2>&1 &
 
 
