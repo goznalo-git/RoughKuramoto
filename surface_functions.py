@@ -47,7 +47,7 @@ def compute_surface_roughness(phases: np.ndarray) -> np.ndarray:
     return roughness
     
 
-def compute_height_height_correlations(phases: np.ndarray) -> np.ndarray:
+def compute_heightdifference_correlations(phases: np.ndarray) -> np.ndarray:
     """
     Compute the height-difference correlation function G(r, t) for a
     Kuramoto–Sakaguchi simulation.

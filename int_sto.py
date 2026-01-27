@@ -19,7 +19,7 @@ print("TimeDep")
 # 1D ring
 L = int(sys.argv[2])
 K = float(sys.argv[3])
-T = 2000  # a bit above 100000 to allow for the next log-scale datapoint (startsampling*multsampling**n) to be included.
+T = 20000  # a bit above 100000 to allow for the next log-scale datapoint (startsampling*multsampling**n) to be included.
 Nt = 100*T
 startsampling = 100
 multsampling = 1.6

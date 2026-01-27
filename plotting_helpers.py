@@ -18,11 +18,21 @@ delta_to_label = {"0": "EW", "atan5": "KPZ"}
 markerdict = {500: "o", 250: "x", 125: "^", 1000: "s"}
 
 
+def analytical_Larkin_structurefactor(k, t, sigma, nu, d=1):
+    """
+    Analytical structure factor for the Larkin model (linear theory),
+    equation (28) in the 2023 paper.
+    """
+
+    S_phi = ((2 * np.pi)**d * 2 * sigma / (nu**2 * k**4)) * (1 - np.exp(- nu * k**2 * t))**2
+
+    return S_phi
+
 ######################################
 ##### ROUGHNESS AND ITS COLLAPSE #####
 ######################################
 
-def plot_roughness_evolution(avg_df, T, tx): 
+def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40]):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
     fig.suptitle("Roughness evolution under different noise types")
@@ -39,9 +49,9 @@ def plot_roughness_evolution(avg_df, T, tx):
             mask = mask = (
                 (avg_df["typenoise"] == typenoise)
                 & (avg_df["deltaname"] == deltaname)
-                & ((avg_df["K"] == 1) | (avg_df["K"] == 20))
                 & (avg_df["T"] == T)
-                & (avg_df["L"] < 1000)
+                & ((avg_df["K"] == Ks[0]) | (avg_df["K"] == Ks[1]))
+                # & (avg_df["L"] < 1000)
             )
             sub_df = avg_df[mask]
 
@@ -59,13 +69,14 @@ def plot_roughness_evolution(avg_df, T, tx):
 
                 ax[j,i].vlines(t_cross, ymin=np.min(mean_roughness), ymax=np.max(mean_roughness),
                                 colors='gray', linestyles='dotted', label=r"$t_\star=$"+f"{np.round(t_cross,1)}")
-
-            ax[j,i].set_title(typelabel+ r" ($\delta$="+f"{deltaname}, K={K}, {M} seeds)")
-
+                
             ax[j,i].set_xscale('log')
             ax[j,i].set_yscale('log')
 
-
+    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
+    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
+    ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
     # Scalings
     ax[0,0].loglog(t[1:-5:], t[1:-5:]**(beta_dict["TimeDep"]["EW"]) /15, label=r"$\beta_{EW}=1/4$", linestyle="--", color="k")
@@ -83,7 +94,7 @@ def plot_roughness_evolution(avg_df, T, tx):
     plt.show()
 
 
-def plot_roughness_collapse(avg_df, T):
+def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40]):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
     fig.suptitle("Roughness collapse under different noise types")
@@ -100,9 +111,9 @@ def plot_roughness_collapse(avg_df, T):
             mask = mask = (
                 (avg_df["typenoise"] == typenoise)
                 & (avg_df["deltaname"] == deltaname)
-                & ((avg_df["K"] == 1) | (avg_df["K"] == 20))
                 & (avg_df["T"] == T)
-                & (avg_df["L"] < 1000)
+                & ((avg_df["K"] == Ks[0]) | (avg_df["K"] == Ks[1]))
+                # & (avg_df["L"] < 1000)
             )
             sub = avg_df[mask]
 
@@ -117,26 +128,26 @@ def plot_roughness_collapse(avg_df, T):
                 # Collapse variables
                 tLz = t / L**(z_dict[typenoise][delta_to_label[deltaname]])
                 WLa = mean_roughness / L**(alpha_dict[typenoise][delta_to_label[deltaname]])
-
-                if deltaname == "atan5":
-                    WLa *= 5
                 
-                ax[j,i].scatter(tLz, WLa, label=r"$\delta=$" + deltaname + r", $L=$" + str(L), marker=markerdict[L])
-            
-            ax[j,i].set_title(typelabel+ r" ($\delta$="+f"{deltaname}, K={K}, {M} seeds)")
+                ax[j,i].scatter(tLz, WLa, label=r"$L=$" + str(L), marker=markerdict[L], alpha=0.7)
 
             ax[j,i].set_xscale('log')
             ax[j,i].set_yscale('log')
 
+    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
+    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
+    ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
+
     # Scalings
-    ax[0,0].loglog(t[1:-8:] / L**(z_dict["TimeDep"]["EW"]), (t[1:-8:] / L ** (alpha_dict["TimeDep"]["EW"])) **(beta_dict["TimeDep"]["EW"]) /125,
+    ax[0,0].loglog(t[1:-8:] / L**(z_dict["TimeDep"]["EW"]), (t[1:-8:] / L ** (alpha_dict["TimeDep"]["EW"])) **(beta_dict["TimeDep"]["EW"]) /190,
                 label=r"$\beta_{EW}=1/4$", linestyle="--", color="k")
-    ax[1,0].loglog(t[1:-8:] / L**(z_dict["TimeDep"]["KPZ"]), (t[1:-8:] / L ** (alpha_dict["TimeDep"]["KPZ"])) **(beta_dict["TimeDep"]["KPZ"]) /12,
+    ax[1,0].loglog(t[1:-8:] / L**(z_dict["TimeDep"]["KPZ"]), (t[1:-8:] / L ** (alpha_dict["TimeDep"]["KPZ"])) **(beta_dict["TimeDep"]["KPZ"]) /100,
                 label=r"$\beta_{KPZ}=1/3$", linestyle="--", color="k")
 
-    ax[0,1].loglog(t[1:-12:] / L**(z_dict["Columnar"]["EW"]), (t[1:-12:] / L ** (alpha_dict["Columnar"]["EW"])) **(beta_dict["Columnar"]["EW"]) /50,
+    ax[0,1].loglog(t[1:-12:] / L**(z_dict["Columnar"]["EW"]), (t[1:-12:] / L ** (alpha_dict["Columnar"]["EW"])) **(beta_dict["Columnar"]["EW"]) /80,
                 label=r"$\beta_{EW}=3/4$", linestyle="--", color="k")
-    ax[1,1].loglog(t[1:-12:] / L**(z_dict["Columnar"]["KPZ"]), (t[1:-12:] / L ** (alpha_dict["Columnar"]["KPZ"])) **(beta_dict["Columnar"]["KPZ"]) /3,
+    ax[1,1].loglog(t[1:-12:] / L**(z_dict["Columnar"]["KPZ"]), (t[1:-12:] / L ** (alpha_dict["Columnar"]["KPZ"])) **(beta_dict["Columnar"]["KPZ"]) /20,
                 label=r"$\beta_{KPZ}\approx 0.7867$", linestyle="--", color="k")
 
     ax[0,0].legend()
@@ -148,12 +159,11 @@ def plot_roughness_collapse(avg_df, T):
     plt.show()
 
 
-
 ##############################################
 ##### HEIGHT-DIFFERENCE AND ITS COLLAPSE #####
 ##############################################
 
-def plot_heightdifference_evolution(avg_df, L, T, tx):
+def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
     
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
     fig.suptitle("Height-difference correlation evolution under different noise types, for $L=$" + str(L))
@@ -172,7 +182,7 @@ def plot_heightdifference_evolution(avg_df, L, T, tx):
                 & (avg_df["L"] == L)
                 & (avg_df["T"] == T)
                 & (avg_df["deltaname"] == deltaname)
-                & ((avg_df["K"] == 1) | (avg_df["K"] == 20))
+                & ((avg_df["K"] == Ks[0]) | (avg_df["K"] == Ks[1]))
             )
             sub = avg_df[mask]
 
@@ -194,10 +204,13 @@ def plot_heightdifference_evolution(avg_df, L, T, tx):
                         rrange = np.array(range(rlen))
                         ax[j,i].scatter(rrange[:int(rlen/2)], mean_heightheight[ti,:int(rlen/2)], label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L])
 
-                ax[j,i].set_title(typelabel+ r" ($\delta$="+f"{deltaname}, K={K}, {M} seeds). " + r"$t_\star$=" + f"{np.round(t_cross,1)}")
-
             ax[j,i].set_xscale('log')
             ax[j,i].set_yscale('log')
+
+    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
+    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
+    ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
     # scaling as r^(2\alpha) = r^1 for alpha = 1/2 (EW/KPZ)
     ax[0,0].loglog(rrange[1:int(rlen/16)], rrange[1:int(rlen/16)]**(2*alpha_loc_dict["TimeDep"]["EW"])/140, label=r"$\alpha_{EW}=1/2$", linestyle="--", color="k")
@@ -216,7 +229,7 @@ def plot_heightdifference_evolution(avg_df, L, T, tx):
     plt.show()
 
 
-def plot_heightdifference_collapse(avg_df, L, T, tx):
+def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
     
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
     fig.suptitle("Height-difference correlation collapse under different noise types, for $L=$" + str(L))
@@ -235,7 +248,7 @@ def plot_heightdifference_collapse(avg_df, L, T, tx):
                 & (avg_df["L"] == L)
                 & (avg_df["T"] == T)
                 & (avg_df["deltaname"] == deltaname)
-                & ((avg_df["K"] == 1) | (avg_df["K"] == 20))
+                & ((avg_df["K"] == Ks[0]) | (avg_df["K"] == Ks[1]))
             )
             sub = avg_df[mask]
 
@@ -260,12 +273,15 @@ def plot_heightdifference_collapse(avg_df, L, T, tx):
                         rt1z = rrange[:int(rlen/2)] / ti**(1/z_dict[typenoise][delta_to_label[deltaname]])
                         Gt2az = mean_heightheight[ti,:int(rlen/2)] / ti**(2*alpha_loc_dict[typenoise][delta_to_label[deltaname]]/z_dict[typenoise][delta_to_label[deltaname]])
 
-                        ax[j,i].scatter(rt1z, Gt2az, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L])
+                        ax[j,i].scatter(rt1z, Gt2az, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L], alpha=0.7)
                     
-                ax[j,i].set_title(typelabel+ r" ($\delta$="+f"{deltaname}, K={K}, {M} seeds). " + r"$t_\star$=" + f"{np.round(t_cross,1)}")
-
                 ax[j,i].set_yscale('log')
                 ax[j,i].set_xscale('log')
+
+    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
+    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
+    ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
     # scaling as r^(2\alpha) = r^1 for alpha = 1/2 (EW/KPZ)
     ax[0,0].loglog(rt1z[1:int(rlen/16)], rt1z[1:int(rlen/16)]**(2*alpha_loc_dict["TimeDep"]["EW"]) /140, label=r"$\alpha_{EW}=1/2$", linestyle="--", color="k")
@@ -290,7 +306,7 @@ def plot_heightdifference_collapse(avg_df, L, T, tx):
 ##### STRUCTURE FACTOR AND ITS COLLAPSE #####
 #############################################
 
-def plot_structurefactor_evolution(avg_df, L, T, tx):
+def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
     fig.suptitle("Structure factor under different noise types, for $L=$" + str(L))
@@ -298,8 +314,7 @@ def plot_structurefactor_evolution(avg_df, L, T, tx):
     fig.supxlabel(r"$\log k$")
     fig.supylabel(r"$\log S(k,t)$")
 
-    for i, (typenoise, typelabel) in enumerate(zip(["TimeDep", "Columnar"], ["Time-dependent", "Columnar"])
-    ):
+    for i, (typenoise, typelabel) in enumerate(zip(["TimeDep", "Columnar"], ["Time-dependent", "Columnar"])):
 
         for j, (delta, deltaname) in enumerate(zip([0, np.arctan(5)], ["0", "atan5"])):
 
@@ -309,7 +324,7 @@ def plot_structurefactor_evolution(avg_df, L, T, tx):
                 & (avg_df["L"] == L)
                 & (avg_df["T"] == T)
                 & (avg_df["deltaname"] == deltaname)
-                & ((avg_df["K"] == 1) | (avg_df["K"] == 20))
+                & ((avg_df["K"] == Ks[0]) | (avg_df["K"] == Ks[1]))
             )
             sub = avg_df[mask]
 
@@ -327,26 +342,38 @@ def plot_structurefactor_evolution(avg_df, L, T, tx):
 
                     if t[ti] > 0 and t[ti] < t_cross:
 
-                        klen = mean_structurefactor.shape[1] 
-                        krange = np.array(range(klen))
+                        klen = mean_structurefactor.shape[1]
+                        krange = np.fft.fftfreq(klen)
                         # we only plot up to half due to nyquist
                         ax[j,i].scatter(krange[:int(klen/2)], mean_structurefactor[ti,:int(klen/2)], label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L])
                     
-                ax[j,i].set_title(typelabel+ r" ($\delta$="+f"{deltaname}, K={K}, {M} seeds). " + r"$t_\star$=" + f"{np.round(t_cross,1)}")
-
                 ax[j,i].set_yscale('log')
                 ax[j,i].set_xscale('log')
 
+    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
+    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
+    ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
+
     # scaling as k^(-2*alpha-1) = k^2 for alpha = 1/2 (EW/KPZ)
-    ax[0,0].loglog(krange[3:int(klen/4)], krange[3:int(klen/4)]**(-2*alpha_s_dict["TimeDep"]["EW"]-1) * 100, label=r"$\alpha_s^{EW}=1/2$", linestyle="--", color="k")
-    ax[1,0].loglog(krange[3:int(klen/4)], krange[3:int(klen/4)]**(-2*alpha_s_dict["TimeDep"]["KPZ"]-1) * 1000, label=r"$\alpha_s^{KPZ}=1/2$", linestyle="--", color="k")
+    ax[0,0].loglog(krange[3:int(klen/4)], krange[3:int(klen/4)]**(-2*alpha_s_dict["TimeDep"]["EW"]-1) / 3000, label=r"$\alpha_s^{EW}=1/2$", linestyle="--", color="k")
+    ax[1,0].loglog(krange[3:int(klen/4)], krange[3:int(klen/4)]**(-2*alpha_s_dict["TimeDep"]["KPZ"]-1) / 500, label=r"$\alpha_s^{KPZ}=1/2$", linestyle="--", color="k")
 
     # # scaling as k^(-2*alpha_s-1) for alpha_s approx 3/2 (EW) or 1.4 (KPZ)
-    ax[0,1].loglog(krange[3:int(klen/4)], krange[3:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["EW"]-1) * 200000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
-    ax[1,1].loglog(krange[5:int(klen/4)], krange[5:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["KPZ"]-1) * 1000000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
+    ax[0,1].loglog(krange[3:int(klen/4)], krange[3:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["EW"]-1) / 50000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
+    ax[1,1].loglog(krange[5:int(klen/4)], krange[5:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["KPZ"]-1) / 10000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
 
     ax[1,0].set_ylim(0,1e3)
     ax[1,1].set_ylim(0,1e5)
+
+    # Add analytical Larkin structure factor for comparison to Columnar EW  case
+    
+    if analytical == True:
+        for ti in range(mean_structurefactor.shape[0])[::4]:
+            t_cross = tx["Columnar"]["EW"] * L**(z_dict["Columnar"]["EW"])
+            if t[ti] > 0 and t[ti] < t_cross:
+                Sphi = analytical_Larkin_structurefactor(krange, ti, sigma=1, nu=20.0, d=1)
+                ax[0,1].loglog(krange[1:int(klen/2)], Sphi[1:int(klen/2)], linestyle=":")#, label=t[ti])
 
     ax[0,0].legend()
     ax[0,1].legend()
@@ -357,7 +384,7 @@ def plot_structurefactor_evolution(avg_df, L, T, tx):
     plt.show()
 
 
-def plot_structurefactor_collapse(avg_df, L, T, tx):
+def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
     fig.suptitle("Structure factor collapse under different noise types, for $L=$" + str(L))
@@ -365,8 +392,7 @@ def plot_structurefactor_collapse(avg_df, L, T, tx):
     fig.supxlabel(r"$\log (k t^{1/z})$")
     fig.supylabel(r"$\log (S(k,t) k^{2\alpha+1})$")
 
-    for i, (typenoise, typelabel) in enumerate(zip(["TimeDep", "Columnar"], ["Time-dependent", "Columnar"])
-    ):
+    for i, (typenoise, typelabel) in enumerate(zip(["TimeDep", "Columnar"], ["Time-dependent", "Columnar"])):
 
         for j, (delta, deltaname) in enumerate(zip([0, np.arctan(5)], ["0", "atan5"])):
 
@@ -376,7 +402,7 @@ def plot_structurefactor_collapse(avg_df, L, T, tx):
                 & (avg_df["L"] == L)
                 & (avg_df["T"] == T)
                 & (avg_df["deltaname"] == deltaname)
-                & ((avg_df["K"] == 1) | (avg_df["K"] == 20))
+                & ((avg_df["K"] == Ks[0]) | (avg_df["K"] == Ks[1]))
             )
             sub = avg_df[mask]
 
@@ -395,26 +421,29 @@ def plot_structurefactor_collapse(avg_df, L, T, tx):
                     if t[ti] > 0 and t[ti] < t_cross:
 
                         klen = mean_structurefactor.shape[1] # we only plot up to half due to nyquist
-                        krange = np.array(range(klen))
+                        krange = np.fft.fftfreq(klen)
 
                         # Collapse variables
                         kt1z = krange[:int(klen/2)] * ti**(1/z_dict[typenoise][delta_to_label[deltaname]])
                         Sk2a = mean_structurefactor[ti,:int(klen/2)] * krange[:int(klen/2)]**(2*alpha_dict[typenoise][delta_to_label[deltaname]]+1)
 
-                        ax[j,i].scatter(kt1z, Sk2a, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L])
-
-                ax[j,i].set_title(typelabel+ r" ($\delta$="+f"{deltaname}, K={K}, {M} seeds). " + r"$t_\star$=" + f"{np.round(t_cross,1)}")
+                        ax[j,i].scatter(kt1z, Sk2a, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L], alpha=0.7)
 
                 ax[j,i].set_yscale('log')
                 ax[j,i].set_xscale('log')
 
+    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
+    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
+    ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
+    
     # scaling as y^(2*alpha+1) = k^2 for alpha = 1/2 (EW/KPZ)
-    ax[0,0].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["TimeDep"]["EW"]-2*alpha_s_dict["TimeDep"]["EW"]) * 50, label=r"$\alpha_s^{EW}=1/2$", linestyle="--", color="k")
-    ax[1,0].loglog(kt1z[3:int(klen/8)], kt1z[3:int(klen/8)]**(2*alpha_dict["TimeDep"]["KPZ"]-2*alpha_s_dict["TimeDep"]["KPZ"]) * 400, label=r"$\alpha_s^{KPZ}=1/2$", linestyle="--", color="k")
+    ax[0,0].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["TimeDep"]["EW"]-2*alpha_s_dict["TimeDep"]["EW"]) / 5000, label=r"$\alpha_s^{EW}=1/2$", linestyle="--", color="k")
+    ax[1,0].loglog(kt1z[3:int(klen/8)], kt1z[3:int(klen/8)]**(2*alpha_dict["TimeDep"]["KPZ"]-2*alpha_s_dict["TimeDep"]["KPZ"]) / 500, label=r"$\alpha_s^{KPZ}=1/2$", linestyle="--", color="k")
 
     # # scaling as k^(-2*alpha_s-1) for alpha_s approx 3/2 (EW) or 1.4 (KPZ)
-    ax[0,1].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["Columnar"]["EW"]-2*alpha_s_dict["Columnar"]["EW"]) * 50000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
-    ax[1,1].loglog(kt1z[5:int(klen/16)], kt1z[5:int(klen/16)]**(2*alpha_dict["Columnar"]["KPZ"]-2*alpha_s_dict["Columnar"]["KPZ"]) * 1000000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
+    ax[0,1].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["Columnar"]["EW"]-2*alpha_s_dict["Columnar"]["EW"]) / 3000000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
+    ax[1,1].loglog(kt1z[5:int(klen/16)], kt1z[5:int(klen/16)]**(2*alpha_dict["Columnar"]["KPZ"]-2*alpha_s_dict["Columnar"]["KPZ"]) / 30000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
 
     # ax[1,0].set_ylim(0,1e3)
 
