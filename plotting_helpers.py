@@ -344,6 +344,7 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
 
                         klen = mean_structurefactor.shape[1]
                         krange = np.fft.fftfreq(klen)
+                        
                         # we only plot up to half due to nyquist
                         ax[j,i].scatter(krange[:int(klen/2)], mean_structurefactor[ti,:int(klen/2)], label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L])
                     
@@ -424,7 +425,7 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
                         krange = np.fft.fftfreq(klen)
 
                         # Collapse variables
-                        kt1z = krange[:int(klen/2)] * ti**(1/z_dict[typenoise][delta_to_label[deltaname]])
+                        kt1z = krange[:int(klen/2)] * t[ti]**(1/z_dict[typenoise][delta_to_label[deltaname]])
                         Sk2a = mean_structurefactor[ti,:int(klen/2)] * krange[:int(klen/2)]**(2*alpha_dict[typenoise][delta_to_label[deltaname]]+1)
 
                         ax[j,i].scatter(kt1z, Sk2a, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L], alpha=0.7)
@@ -437,16 +438,22 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
     ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
     ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
     
-    # scaling as y^(2*alpha+1) = k^2 for alpha = 1/2 (EW/KPZ)
-    ax[0,0].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["TimeDep"]["EW"]-2*alpha_s_dict["TimeDep"]["EW"]) / 5000, label=r"$\alpha_s^{EW}=1/2$", linestyle="--", color="k")
-    ax[1,0].loglog(kt1z[3:int(klen/8)], kt1z[3:int(klen/8)]**(2*alpha_dict["TimeDep"]["KPZ"]-2*alpha_s_dict["TimeDep"]["KPZ"]) / 500, label=r"$\alpha_s^{KPZ}=1/2$", linestyle="--", color="k")
+    # initial scaling as y^(2*alpha+1) = k^2 for alpha = 1/2 (EW/KPZ)
+    kt1z_init = kt1z/10
+    ax[0,0].loglog(kt1z_init[1:int(klen/64)], kt1z_init[1:int(klen/64)]**(2*alpha_dict["TimeDep"]["EW"]+1) / 50, label=r"$\alpha^{EW}=1/2$", linestyle="--", color="k")
+    ax[1,0].loglog(kt1z_init[1:int(klen/32)], kt1z_init[1:int(klen/32)]**(2*alpha_dict["TimeDep"]["KPZ"]+1) / 30, label=r"$\alpha^{KPZ}=1/2$", linestyle="--", color="k")
 
-    # # scaling as k^(-2*alpha_s-1) for alpha_s approx 3/2 (EW) or 1.4 (KPZ)
-    ax[0,1].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["Columnar"]["EW"]-2*alpha_s_dict["Columnar"]["EW"]) / 3000000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
-    ax[1,1].loglog(kt1z[5:int(klen/16)], kt1z[5:int(klen/16)]**(2*alpha_dict["Columnar"]["KPZ"]-2*alpha_s_dict["Columnar"]["KPZ"]) / 30000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
+    # initial scaling as y^(2*alpha+1) for alpha approx 3/2 (EW) or 1.07 (KPZ)
+    ax[0,1].loglog(kt1z_init[1:int(klen/200)], kt1z_init[1:int(klen/200)]**(2*alpha_dict["Columnar"]["EW"]+1) / 1, label=r"$\alpha^{EW}=3/2$", linestyle="--", color="k")
+    ax[1,1].loglog(kt1z_init[1:int(klen/128)], kt1z_init[1:int(klen/128)]**(2*alpha_dict["Columnar"]["KPZ"]+1) / 1, label=r"$\alpha^{KPZ}=1.07$", linestyle="--", color="k")
 
-    # ax[1,0].set_ylim(0,1e3)
+    # intermediate scaling as y^(2*(alpha-alpha_s)) = k^2 for alpha = 1/2 (EW/KPZ)
+    ax[0,0].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["TimeDep"]["EW"]-2*alpha_s_dict["TimeDep"]["EW"]) / 15000, label=r"$\alpha_s^{EW}=1/2$", linestyle="--", color="k")
+    ax[1,0].loglog(kt1z[3:int(klen/8)], kt1z[3:int(klen/8)]**(2*alpha_dict["TimeDep"]["KPZ"]-2*alpha_s_dict["TimeDep"]["KPZ"]) / 3000, label=r"$\alpha_s^{KPZ}=1/2$", linestyle="--", color="k")
 
+    # intermediate scaling as y^(2*(alpha-alpha_s)) for alpha_s approx 3/2 (EW) or 1.4 (KPZ)
+    ax[0,1].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["Columnar"]["EW"]-2*alpha_s_dict["Columnar"]["EW"]) / 30000000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
+    ax[1,1].loglog(kt1z[5:int(klen/16)], kt1z[5:int(klen/16)]**(2*alpha_dict["Columnar"]["KPZ"]-2*alpha_s_dict["Columnar"]["KPZ"]) / 300000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
     ax[0,0].legend()
     ax[0,1].legend()
     ax[1,0].legend()
