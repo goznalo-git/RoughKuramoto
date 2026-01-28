@@ -4,6 +4,11 @@ import scienceplots
 
 plt.style.use(["science","no-latex"])
 
+### TO CLEAN ### 
+# All the for loops over rows, since we now filter K, L, delta before (there should only be one row) 
+# Remove M
+
+
 
 # Scaling exponents
 z_dict = {"TimeDep": {"EW": 2, "KPZ": 3/2}, "Columnar": {"EW": 2, "KPZ": 1.36}}
@@ -207,6 +212,8 @@ def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
             ax[j,i].set_xscale('log')
             ax[j,i].set_yscale('log')
 
+            ax[j,i].text(0.8, 0.05, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
+
     ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
     ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
     ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
@@ -270,13 +277,15 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
                         rrange = np.array(range(rlen))
 
                         # Collapse variables
-                        rt1z = rrange[:int(rlen/2)] / ti**(1/z_dict[typenoise][delta_to_label[deltaname]])
-                        Gt2az = mean_heightheight[ti,:int(rlen/2)] / ti**(2*alpha_loc_dict[typenoise][delta_to_label[deltaname]]/z_dict[typenoise][delta_to_label[deltaname]])
+                        rt1z = rrange[:int(rlen/2)] / t[ti]**(1/z_dict[typenoise][delta_to_label[deltaname]])
+                        Gt2az = mean_heightheight[ti,:int(rlen/2)] / t[ti]**(2*alpha_loc_dict[typenoise][delta_to_label[deltaname]]/z_dict[typenoise][delta_to_label[deltaname]])
 
                         ax[j,i].scatter(rt1z, Gt2az, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L], alpha=0.7)
                     
                 ax[j,i].set_yscale('log')
                 ax[j,i].set_xscale('log')
+                
+                ax[j,i].text(0.8, 0.05, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
     ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
     ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
@@ -350,6 +359,8 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
                     
                 ax[j,i].set_yscale('log')
                 ax[j,i].set_xscale('log')
+                
+                ax[j,i].text(0.05, 0.05, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
     ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
     ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
@@ -373,7 +384,7 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
         for ti in range(mean_structurefactor.shape[0])[::4]:
             t_cross = tx["Columnar"]["EW"] * L**(z_dict["Columnar"]["EW"])
             if t[ti] > 0 and t[ti] < t_cross:
-                Sphi = analytical_Larkin_structurefactor(krange, ti, sigma=1, nu=20.0, d=1)
+                Sphi = analytical_Larkin_structurefactor(krange, t[ti], sigma=1, nu=Ks[1], d=1)
                 ax[0,1].loglog(krange[1:int(klen/2)], Sphi[1:int(klen/2)], linestyle=":")#, label=t[ti])
 
     ax[0,0].legend()
@@ -432,6 +443,8 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
 
                 ax[j,i].set_yscale('log')
                 ax[j,i].set_xscale('log')
+                
+                ax[j,i].text(0.05, 0.95, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
     ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
     ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    

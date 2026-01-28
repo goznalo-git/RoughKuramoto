@@ -14,10 +14,10 @@
 source ../scientific_kernel/bin/activate   
 
 
-L=125
+L=250
 Ksto=1           # 2024 paper
 Kcol=40          # 2023 paper
-M=400
+M=300
 
 
 ## Large coupling
