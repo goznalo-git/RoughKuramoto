@@ -66,7 +66,6 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40]):
                 mean_roughness = row["mean_roughness"]
                 L = row["L"]
                 K = row["K"]
-                M = row["M"]
                 
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
 
@@ -78,8 +77,8 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40]):
             ax[j,i].set_xscale('log')
             ax[j,i].set_yscale('log')
 
-    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
-    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
+    ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")      
     ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
     ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
@@ -128,19 +127,22 @@ def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40]):
                 mean_roughness = row["mean_roughness"]
                 L = row["L"]
                 K = row["K"]
-                M = row["M"]
+
+                # Exponents
+                z = z_dict[typenoise][delta_to_label[deltaname]]
+                alpha = alpha_dict[typenoise][delta_to_label[deltaname]]
 
                 # Collapse variables
-                tLz = t / L**(z_dict[typenoise][delta_to_label[deltaname]])
-                WLa = mean_roughness / L**(alpha_dict[typenoise][delta_to_label[deltaname]])
+                tLz = t / L**z
+                WLa = mean_roughness / L**alpha
                 
                 ax[j,i].scatter(tLz, WLa, label=r"$L=$" + str(L), marker=markerdict[L], alpha=0.7)
 
             ax[j,i].set_xscale('log')
             ax[j,i].set_yscale('log')
 
-    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
-    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
+    ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")      
     ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
     ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
@@ -197,11 +199,10 @@ def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
                 mean_heightheight = row["mean_heightheight"]
                 L = row["L"]
                 K = row["K"]
-                M = row["M"]
-
+                
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
 
-                for ti in range(mean_heightheight.shape[0])[::4]:
+                for ti in range(len(t))[::4]:
 
                     if t[ti] > 0 and t[ti] < t_cross:
 
@@ -214,8 +215,8 @@ def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
 
             ax[j,i].text(0.8, 0.05, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
-    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
-    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
+    ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")     
     ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
     ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
@@ -265,11 +266,14 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
                 mean_heightheight = row["mean_heightheight"]
                 L = row["L"]
                 K = row["K"]
-                M = row["M"]
 
-                t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
+                # Exponents
+                z = z_dict[typenoise][delta_to_label[deltaname]]
+                alpha_loc = alpha_loc_dict[typenoise][delta_to_label[deltaname]]
+
+                t_cross = tx[typenoise][delta_to_label[deltaname]] * L**z
                 
-                for ti in range(mean_heightheight.shape[0])[::4]:
+                for ti in range(len(t))[::4]:
 
                     if t[ti] > 0 and t[ti] < t_cross:
 
@@ -277,8 +281,8 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
                         rrange = np.array(range(rlen))
 
                         # Collapse variables
-                        rt1z = rrange[:int(rlen/2)] / t[ti]**(1/z_dict[typenoise][delta_to_label[deltaname]])
-                        Gt2az = mean_heightheight[ti,:int(rlen/2)] / t[ti]**(2*alpha_loc_dict[typenoise][delta_to_label[deltaname]]/z_dict[typenoise][delta_to_label[deltaname]])
+                        rt1z = rrange[:int(rlen/2)] / t[ti]**(1/z)
+                        Gt2az = mean_heightheight[ti,:int(rlen/2)] / t[ti]**(2*alpha_loc/z)
 
                         ax[j,i].scatter(rt1z, Gt2az, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L], alpha=0.7)
                     
@@ -287,8 +291,8 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
                 
                 ax[j,i].text(0.8, 0.05, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
-    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
-    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
+    ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")      
     ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
     ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
@@ -343,11 +347,10 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
                 mean_structurefactor = row["mean_structurefactor"]
                 L = row["L"]
                 K = row["K"]
-                M = row["M"]
 
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
 
-                for ti in range(mean_structurefactor.shape[0])[::4]:
+                for ti in range(len(t))[::4]:
 
                     if t[ti] > 0 and t[ti] < t_cross:
 
@@ -362,8 +365,8 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
                 
                 ax[j,i].text(0.05, 0.05, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
-    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
-    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
+    ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")    
     ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
     ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
@@ -381,7 +384,7 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
     # Add analytical Larkin structure factor for comparison to Columnar EW  case
     
     if analytical == True:
-        for ti in range(mean_structurefactor.shape[0])[::4]:
+        for ti in range(len(t))[::4]:
             t_cross = tx["Columnar"]["EW"] * L**(z_dict["Columnar"]["EW"])
             if t[ti] > 0 and t[ti] < t_cross:
                 Sphi = analytical_Larkin_structurefactor(krange, t[ti], sigma=1, nu=Ks[1], d=1)
@@ -424,11 +427,14 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
                 mean_structurefactor = row["mean_structurefactor"]
                 L = row["L"]
                 K = row["K"]
-                M = row["M"]
+
+                # Exponents
+                z = z_dict[typenoise][delta_to_label[deltaname]]
+                alpha = alpha_dict[typenoise][delta_to_label[deltaname]]
 
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
 
-                for ti in range(mean_structurefactor.shape[0])[::4]:
+                for ti in range(len(t))[::4]:
 
                     if t[ti] > 0 and t[ti] < t_cross:
 
@@ -436,8 +442,8 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
                         krange = np.fft.fftfreq(klen)
 
                         # Collapse variables
-                        kt1z = krange[:int(klen/2)] * t[ti]**(1/z_dict[typenoise][delta_to_label[deltaname]])
-                        Sk2a = mean_structurefactor[ti,:int(klen/2)] * krange[:int(klen/2)]**(2*alpha_dict[typenoise][delta_to_label[deltaname]]+1)
+                        kt1z = krange[:int(klen/2)] * t[ti]**(1/z)
+                        Sk2a = mean_structurefactor[ti,:int(klen/2)] * krange[:int(klen/2)]**(2*alpha+1)
 
                         ax[j,i].scatter(kt1z, Sk2a, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L], alpha=0.7)
 
@@ -446,8 +452,8 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
                 
                 ax[j,i].text(0.05, 0.95, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
-    ax[0,0].set_title(typelabel + f" ($K=${Ks[0]})")
-    ax[0,1].set_title(typelabel + f" ($K=${Ks[1]})")    
+    ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
+    ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")    
     ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
     ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
     
