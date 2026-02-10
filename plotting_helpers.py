@@ -7,7 +7,7 @@ plt.style.use(["science","no-latex"])
 ### TO CLEAN ### 
 # All the for loops over rows, since we now filter K, L, delta before (there should only be one row) 
 # Remove M
-
+# Remove L = row["L"] and K = row["K"]
 
 
 # Scaling exponents
@@ -213,7 +213,7 @@ def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
             ax[j,i].set_xscale('log')
             ax[j,i].set_yscale('log')
 
-            ax[j,i].text(0.8, 0.05, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
+            ax[j,i].text(0.8, 0.05, fr'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
     ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
     ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")     
@@ -269,7 +269,7 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
 
                 # Exponents
                 z = z_dict[typenoise][delta_to_label[deltaname]]
-                alpha_loc = alpha_loc_dict[typenoise][delta_to_label[deltaname]]
+                alpha = alpha_dict[typenoise][delta_to_label[deltaname]]
 
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**z
                 
@@ -282,14 +282,14 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
 
                         # Collapse variables
                         rt1z = rrange[:int(rlen/2)] / t[ti]**(1/z)
-                        Gt2az = mean_heightheight[ti,:int(rlen/2)] / t[ti]**(2*alpha_loc/z)
+                        Gt2az = mean_heightheight[ti,:int(rlen/2)] / t[ti]**(2*alpha/z)
 
                         ax[j,i].scatter(rt1z, Gt2az, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L], alpha=0.7)
                     
                 ax[j,i].set_yscale('log')
                 ax[j,i].set_xscale('log')
                 
-                ax[j,i].text(0.8, 0.05, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
+                ax[j,i].text(0.8, 0.05, fr'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
     ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
     ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")      
@@ -297,12 +297,12 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
     ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
     # scaling as r^(2\alpha) = r^1 for alpha = 1/2 (EW/KPZ)
-    ax[0,0].loglog(rt1z[1:int(rlen/16)], rt1z[1:int(rlen/16)]**(2*alpha_loc_dict["TimeDep"]["EW"]) /140, label=r"$\alpha_{EW}=1/2$", linestyle="--", color="k")
-    ax[1,0].loglog(rt1z[1:int(rlen/16)], rt1z[1:int(rlen/16)]**(2*alpha_loc_dict["TimeDep"]["KPZ"])/15, label=r"$\alpha_{KPZ}=1/2$", linestyle="--", color="k")
+    ax[0,0].loglog(rt1z[1:int(rlen/32)], rt1z[1:int(rlen/32)]**(2*alpha_loc_dict["TimeDep"]["EW"]) /140, label=r"$\alpha_{EW}=1/2$", linestyle="--", color="k")
+    ax[1,0].loglog(rt1z[1:int(rlen/32)], rt1z[1:int(rlen/32)]**(2*alpha_loc_dict["TimeDep"]["KPZ"])/15, label=r"$\alpha_{KPZ}=1/2$", linestyle="--", color="k")
 
     # scaling as r^(2\alpha) = r^2 for alpha_loc approx 1 (EW/KPZ)
-    ax[0,1].loglog(rt1z[1:int(rlen/16)], rt1z[1:int(rlen/16)]**(2*alpha_loc_dict["Columnar"]["EW"])/15, label=r"$\alpha_{loc}^{EW}=1$", linestyle="--", color="k")
-    ax[1,1].loglog(rt1z[1:int(rlen/16)], rt1z[1:int(rlen/16)]**(2*alpha_loc_dict["Columnar"]["KPZ"])/10, label=r"$\alpha_{loc}^{KPZ}=0.96$", linestyle="--", color="k")
+    ax[0,1].loglog(rt1z[2:int(rlen/32)], rt1z[2:int(rlen/32)]**(2*alpha_loc_dict["Columnar"]["EW"])/500, label=r"$\alpha_{loc}^{EW}=1$", linestyle="--", color="k")
+    ax[1,1].loglog(rt1z[2:int(rlen/32)], rt1z[2:int(rlen/32)]**(2*alpha_loc_dict["Columnar"]["KPZ"])/50, label=r"$\alpha_{loc}^{KPZ}=0.96$", linestyle="--", color="k")
 
     ax[0,0].legend()
     ax[0,1].legend()
@@ -363,7 +363,7 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
                 ax[j,i].set_yscale('log')
                 ax[j,i].set_xscale('log')
                 
-                ax[j,i].text(0.05, 0.05, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
+                ax[j,i].text(0.05, 0.05, fr'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
     ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
     ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")    
@@ -450,7 +450,7 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
                 ax[j,i].set_yscale('log')
                 ax[j,i].set_xscale('log')
                 
-                ax[j,i].text(0.05, 0.95, f'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
+                ax[j,i].text(0.05, 0.95, fr'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
     ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
     ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")    
@@ -473,6 +473,7 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
     # intermediate scaling as y^(2*(alpha-alpha_s)) for alpha_s approx 3/2 (EW) or 1.4 (KPZ)
     ax[0,1].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["Columnar"]["EW"]-2*alpha_s_dict["Columnar"]["EW"]) / 30000000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
     ax[1,1].loglog(kt1z[5:int(klen/16)], kt1z[5:int(klen/16)]**(2*alpha_dict["Columnar"]["KPZ"]-2*alpha_s_dict["Columnar"]["KPZ"]) / 300000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
+    
     ax[0,0].legend()
     ax[0,1].legend()
     ax[1,0].legend()
