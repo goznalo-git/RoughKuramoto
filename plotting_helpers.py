@@ -40,7 +40,7 @@ def analytical_Larkin_structurefactor(k, t, sigma, nu, d=1):
 def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40]):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
-    fig.suptitle("Roughness evolution under different noise types")
+    # fig.suptitle("Roughness evolution under different noise types")
 
     fig.supxlabel(r"$\log t$")
     fig.supylabel(r"$\log W$")
@@ -95,13 +95,14 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40]):
     ax[1,1].legend()
 
     plt.tight_layout()
+    plt.savefig("Figures/roughness_evolution.png", dpi=300)
     plt.show()
 
 
 def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40]):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
-    fig.suptitle("Roughness collapse under different noise types")
+    # fig.suptitle("Roughness collapse under different noise types")
 
     fig.supxlabel(r"$\log (t/L^z)$")
     fig.supylabel(r"$\log (W / L^\alpha)$")
@@ -163,6 +164,7 @@ def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40]):
     ax[1,1].legend()
 
     plt.tight_layout()
+    plt.savefig("Figures/roughness_collapse.png", dpi=300)
     plt.show()
 
 
@@ -173,7 +175,7 @@ def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40]):
 def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
     
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
-    fig.suptitle("Height-difference correlation evolution under different noise types, for $L=$" + str(L))
+    # fig.suptitle("Height-difference correlation evolution under different noise types, for $L=$" + str(L))
 
     fig.supxlabel(r"$\log r$")
     fig.supylabel(r"$\log G(r,t)$")
@@ -234,13 +236,14 @@ def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
     ax[1,1].legend()
 
     plt.tight_layout()
+    plt.savefig(f"Figures/heighdifference_evolution_{L}.png", dpi=300)
     plt.show()
 
 
 def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
     
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
-    fig.suptitle("Height-difference correlation collapse under different noise types, for $L=$" + str(L))
+    # fig.suptitle("Height-difference correlation collapse under different noise types, for $L=$" + str(L))
 
     fig.supxlabel(r"$\log (r/ t^{1/z})$")
     fig.supylabel(r"$\log (G(r,t)/ t^{2\alpha/z})$")
@@ -298,10 +301,10 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
 
     # scaling as r^(2\alpha) = r^1 for alpha = 1/2 (EW/KPZ)
     ax[0,0].loglog(rt1z[1:int(rlen/32)], rt1z[1:int(rlen/32)]**(2*alpha_loc_dict["TimeDep"]["EW"]) /140, label=r"$\alpha_{EW}=1/2$", linestyle="--", color="k")
-    ax[1,0].loglog(rt1z[1:int(rlen/32)], rt1z[1:int(rlen/32)]**(2*alpha_loc_dict["TimeDep"]["KPZ"])/15, label=r"$\alpha_{KPZ}=1/2$", linestyle="--", color="k")
+    ax[1,0].loglog(rt1z[1:int(rlen/64)], rt1z[1:int(rlen/64)]**(2*alpha_loc_dict["TimeDep"]["KPZ"])/15, label=r"$\alpha_{KPZ}=1/2$", linestyle="--", color="k")
 
     # scaling as r^(2\alpha) = r^2 for alpha_loc approx 1 (EW/KPZ)
-    ax[0,1].loglog(rt1z[2:int(rlen/32)], rt1z[2:int(rlen/32)]**(2*alpha_loc_dict["Columnar"]["EW"])/500, label=r"$\alpha_{loc}^{EW}=1$", linestyle="--", color="k")
+    ax[0,1].loglog(rt1z[2:int(rlen/16)], rt1z[2:int(rlen/16)]**(2*alpha_loc_dict["Columnar"]["EW"])/500, label=r"$\alpha_{loc}^{EW}=1$", linestyle="--", color="k")
     ax[1,1].loglog(rt1z[2:int(rlen/32)], rt1z[2:int(rlen/32)]**(2*alpha_loc_dict["Columnar"]["KPZ"])/50, label=r"$\alpha_{loc}^{KPZ}=0.96$", linestyle="--", color="k")
 
     ax[0,0].legend()
@@ -310,6 +313,7 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
     ax[1,1].legend()
 
     plt.tight_layout()
+    plt.savefig(f"Figures/heighdifference_collapse_{L}.png", dpi=300)
     plt.show()
 
 
@@ -322,7 +326,7 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
 def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
-    fig.suptitle("Structure factor under different noise types, for $L=$" + str(L))
+    # fig.suptitle("Structure factor under different noise types, for $L=$" + str(L))
 
     fig.supxlabel(r"$\log k$")
     fig.supylabel(r"$\log S(k,t)$")
@@ -375,11 +379,16 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
     ax[1,0].loglog(krange[3:int(klen/4)], krange[3:int(klen/4)]**(-2*alpha_s_dict["TimeDep"]["KPZ"]-1) / 500, label=r"$\alpha_s^{KPZ}=1/2$", linestyle="--", color="k")
 
     # # scaling as k^(-2*alpha_s-1) for alpha_s approx 3/2 (EW) or 1.4 (KPZ)
-    ax[0,1].loglog(krange[3:int(klen/4)], krange[3:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["EW"]-1) / 50000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
-    ax[1,1].loglog(krange[5:int(klen/4)], krange[5:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["KPZ"]-1) / 10000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
+    ax[0,1].loglog(krange[3:int(klen/4)], krange[3:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["EW"]-1) / 200000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
+    ax[1,1].loglog(krange[5:int(klen/4)], krange[5:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["KPZ"]-1) / 20000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
 
     ax[1,0].set_ylim(0,1e3)
     ax[1,1].set_ylim(0,1e5)
+
+    ax[0,0].text(0.5, 0.6, r"$k^{-2\alpha_s+1}$", fontsize=12, transform=ax[0,0].transAxes)
+    ax[0,1].text(0.5, 0.6, r"$k^{-2\alpha_s+1}$", fontsize=12, transform=ax[0,1].transAxes)
+    ax[1,0].text(0.5, 0.6, r"$k^{-2\alpha_s+1}$", fontsize=12, transform=ax[1,0].transAxes)
+    ax[1,1].text(0.5, 0.7, r"$k^{-2\alpha_s+1}$", fontsize=12, transform=ax[1,1].transAxes)
 
     # Add analytical Larkin structure factor for comparison to Columnar EW  case
     
@@ -396,15 +405,16 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
     ax[1,1].legend()
 
     plt.tight_layout()
+    plt.savefig(f"Figures/structurefactor_evolution_{L}.png", dpi=300)
     plt.show()
 
 
 def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
-    fig.suptitle("Structure factor collapse under different noise types, for $L=$" + str(L))
+    # fig.suptitle("Structure factor collapse under different noise types, for $L=$" + str(L))
 
-    fig.supxlabel(r"$\log (k t^{1/z})$")
+    fig.supxlabel(r"$\log(y)=\log (k t^{1/z})$")
     fig.supylabel(r"$\log (S(k,t) k^{2\alpha+1})$")
 
     for i, (typenoise, typelabel) in enumerate(zip(["TimeDep", "Columnar"], ["Time-dependent", "Columnar"])):
@@ -467,19 +477,30 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
     ax[1,1].loglog(kt1z_init[1:int(klen/128)], kt1z_init[1:int(klen/128)]**(2*alpha_dict["Columnar"]["KPZ"]+1) / 1, label=r"$\alpha^{KPZ}=1.07$", linestyle="--", color="k")
 
     # intermediate scaling as y^(2*(alpha-alpha_s)) = k^2 for alpha = 1/2 (EW/KPZ)
-    ax[0,0].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["TimeDep"]["EW"]-2*alpha_s_dict["TimeDep"]["EW"]) / 15000, label=r"$\alpha_s^{EW}=1/2$", linestyle="--", color="k")
-    ax[1,0].loglog(kt1z[3:int(klen/8)], kt1z[3:int(klen/8)]**(2*alpha_dict["TimeDep"]["KPZ"]-2*alpha_s_dict["TimeDep"]["KPZ"]) / 3000, label=r"$\alpha_s^{KPZ}=1/2$", linestyle="--", color="k")
+    ax[0,0].loglog(kt1z[3:int(klen/8)], kt1z[3:int(klen/8)]**(2*alpha_dict["TimeDep"]["EW"]-2*alpha_s_dict["TimeDep"]["EW"]) / 13000, label=r"$\alpha_s^{EW}=1/2$", linestyle=":", color="k")
+    ax[1,0].loglog(kt1z[8:int(klen/2)], kt1z[8:int(klen/2)]**(2*alpha_dict["TimeDep"]["KPZ"]-2*alpha_s_dict["TimeDep"]["KPZ"]) / 3000, label=r"$\alpha_s^{KPZ}=1/2$", linestyle=":", color="k")
 
     # intermediate scaling as y^(2*(alpha-alpha_s)) for alpha_s approx 3/2 (EW) or 1.4 (KPZ)
-    ax[0,1].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["Columnar"]["EW"]-2*alpha_s_dict["Columnar"]["EW"]) / 30000000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
-    ax[1,1].loglog(kt1z[5:int(klen/16)], kt1z[5:int(klen/16)]**(2*alpha_dict["Columnar"]["KPZ"]-2*alpha_s_dict["Columnar"]["KPZ"]) / 300000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
-    
+    ax[0,1].loglog(kt1z[2:int(klen/16)], kt1z[2:int(klen/16)]**(2*alpha_dict["Columnar"]["EW"]-2*alpha_s_dict["Columnar"]["EW"]) / 15000000, label=r"$\alpha_s^{EW}=3/2$", linestyle=":", color="k")
+    ax[1,1].loglog(kt1z[4:int(klen/32)], kt1z[4:int(klen/32)]**(2*alpha_dict["Columnar"]["KPZ"]-2*alpha_s_dict["Columnar"]["KPZ"]) / 300000, label=r"$\alpha_s^{KPZ}=1.4$", linestyle=":", color="k")
+
+    ax[0,0].text(0.1, 0.6, r"$y^{2\alpha_s+1}$", fontsize=12, transform=ax[0,0].transAxes)
+    ax[0,1].text(0.1, 0.7, r"$y^{2\alpha_s+1}$", fontsize=12, transform=ax[0,1].transAxes)
+    ax[1,0].text(0.1, 0.6, r"$y^{2\alpha_s+1}$", fontsize=12, transform=ax[1,0].transAxes)
+    ax[1,1].text(0.1, 0.7, r"$y^{2\alpha_s+1}$", fontsize=12, transform=ax[1,1].transAxes)
+
+    ax[0,0].text(0.5, 0.75, r"$y^{2(\alpha-\alpha_s)}$", fontsize=12, transform=ax[0,0].transAxes)
+    ax[0,1].text(0.5, 0.7, r"$y^{2(\alpha-\alpha_s)}$", fontsize=12, transform=ax[0,1].transAxes)
+    ax[1,0].text(0.5, 0.75, r"$y^{2(\alpha-\alpha_s)}$", fontsize=12, transform=ax[1,0].transAxes)
+    ax[1,1].text(0.4, 0.7, r"$y^{2(\alpha-\alpha_s)}$", fontsize=12, transform=ax[1,1].transAxes)
+
     ax[0,0].legend()
     ax[0,1].legend()
     ax[1,0].legend()
     ax[1,1].legend()
 
     plt.tight_layout()
+    plt.savefig(f"Figures/structurefactor_collapse_{L}.png", dpi=300)
     plt.show()
 
 
