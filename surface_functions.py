@@ -81,7 +81,7 @@ def compute_structure_factor(phases: np.ndarray) -> np.ndarray:
     Kuramoto–Sakaguchi simulation.
 
     The structure factor is defined as:
-        S(k, t) = < |\hat(h)(k, t)|^2 >
+        S(k, t) = < |hat(h)(k, t)|^2 >
     where the average is taken over frequency index k at fixed time t.
 
     Parameters
@@ -112,8 +112,13 @@ def compute_phase_covariance(phases: np.ndarray) -> np.ndarray:
     Compute the phase covariance function C(r, t) for a Kuramoto–Sakaguchi simulation.
 
     The phase covariance is defined as:
-        C(r, t) = < φ(x, t) φ(x + r, t) >  -  ( < φ(x, t) > )^2
-    where <...> denotes an average over the spatial index x at fixed time t.
+        C(r, t) = < overline{φ(x, t) φ(x + r, t)} >  -  ( < overline{φ}(x, t) > )^2
+    where overline{...} denotes an average over the spatial index x at fixed time t
+    and <...> denotes an average over simulations.
+
+    Note that, since the squaring is after the average over simulations, 
+    here we just compute the two terms separately and afterwards the averaging 
+    over simulations takes place, followed by the square and subtraction. 
 
     Parameters
     ----------
@@ -122,22 +127,23 @@ def compute_phase_covariance(phases: np.ndarray) -> np.ndarray:
 
     Returns
     -------
-    cov : ndarray of shape (Nt, N)
-        The covariance C(r, t) for separations r = 0, 1, ..., N-1 at each time t.
+    hprodh_average : ndarray of shape (Nt, N)
+        The spatial average of φ(x, t) φ(x + r, t) for separations r = 0, 1, ..., N-1 at each time t.
         The r-th column corresponds to separation r.
+    h_average : ndarray of shape (Nt, )
+        The spatial average of φ(x, t) at each time t.
     """
     Nt, N = phases.shape
 
-    # Spatial mean at each time: <φ(x,t)>
-    mean_phi_t = np.mean(phases, axis=1)  # shape (Nt,)
+    # Spatial mean at each time: overline{φ(x,t)}
+    h_average = np.mean(phases, axis=1)  # shape (Nt,)
 
-    phase_covariance = np.empty((Nt, N), dtype=float)
+    hprodh_average = np.empty((Nt, N), dtype=float)
     for r in range(N):
         # <φ(x,t) φ(x+r,t)>
-        prod_mean = np.mean(phases * np.roll(phases, r, axis=1), axis=1)
-        phase_covariance[:, r] = prod_mean - mean_phi_t**2
+        hprodh_average[:, r] = np.mean(phases * np.roll(phases, r, axis=1), axis=1)
 
-    return phase_covariance
+    return hprodh_average, h_average
 
 
 def compute_rescaled_phases(
