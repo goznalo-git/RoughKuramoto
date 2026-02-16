@@ -29,4 +29,4 @@ Helpers and custom functions
 Visualizations folder
 - animation_script.py
 - deterministic_terms.ipynb
-
+- gaussian_universality.ipynb
