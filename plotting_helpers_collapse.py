@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import quad
 import scienceplots
 
 plt.style.use(["science","no-latex"])
@@ -305,7 +306,43 @@ with open("airy_1_values.txt", 'r') as f:
     Airy_1 = {float(line.split(" ")[0]): float(line.split(" ")[1]) for line in f.readlines()}
 
 
-def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40]):
+def larkin_inv_ft(x, eps=1e-6, rtol=1e-10, atol=1e-12, limit=300):
+    """
+    Computes  F^{-1}[ ((1 - e^{-k^2})^2 / k^4) ](x)
+    using the convention:
+        F^{-1}[g](x) = (1/2π)∫_{-∞}^{∞} e^{ikx} g(k) dk
+                     = (1/π) ∫_0^∞ cos(kx) g(k) dk   (g even)
+
+    Parameters
+    ----------
+    x : float
+        Evaluation point.
+    eps : float
+        Threshold for using the small-k series to avoid 0/0.
+    rtol, atol : float
+        quad tolerances.
+    limit : int
+        quad subinterval limit.
+
+    Returns
+    -------
+    float
+        Value of the inverse transform at x.
+    """
+
+    def g(kappa):
+        ak = abs(kappa)
+        if ak < eps:
+            k2 = kappa*kappa
+            return 1.0 - k2 + (7.0/12.0)*k2*k2  # series at κ=0
+        return (1.0 - np.exp(-kappa*kappa))**2 / (kappa**4)
+
+    val, _ = quad(lambda kappa: np.cos(2*np.pi*kappa*x) * g(kappa), 0.0, np.inf,
+                  epsrel=rtol, epsabs=atol, limit=limit)
+    return val / np.pi   # (1/2π) over R -> (1/π) cosine integral
+
+
+def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40], nu=40.0, dx=1.0):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
     # fig.suptitle("Phase covariance collapse under different noise types, for $L=$" + str(L))
@@ -368,10 +405,11 @@ def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40]):
                         Ct2ba1 = mean_phasecovariance[ti,:int(rlen/2)] / (a_1 * t[ti]**(2*beta_dict[typenoise][delta_to_label[deltaname]]))
 
                         ax[j,i].scatter(a2rt1z, Ct2ba1, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L], alpha=0.7)
-                        
+
                 ax[j,i].text(0.8, 0.95, fr'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
-                ax[j,i].plot(list(Airy_1.keys()), list(Airy_1.values()), lw=2, color="black", label=r"Airy$_1$")
+                ax[j,i].plot(list(Airy_1.keys()), list(Airy_1.values()), lw=2, color="black", linestyle="--", label=r"Airy$_1$")
+                ax[j,i].plot(np.linspace(0, 1, 400), [larkin_inv_ft(rr) for rr in np.linspace(0, 1, 400)], lw=2, color="black", label="Larkin") 
 
     ax[0,0].set_xlim(0,1)
     ax[0,1].set_xlim(0,1)
