@@ -21,14 +21,16 @@ beta_dict = {"TimeDep": {"EW": alpha_dict["TimeDep"]["EW"]/z_dict["TimeDep"]["EW
 delta_to_label = {"0": "EW", "atan5": "KPZ"}
 
 # Markers for different system sizes
-markerdict = {500: "o", 250: "x", 125: "^", 1000: "s"}
+markerdict = {125: "^", 250: "x", 500: "o", 1000: "s"}
 
+# Vertical lines' colors for different system sizes (roughness evolution plot)
+vlinecolordict = {125: "tab:blue", 250: "tab:green", 500: "tab:orange", 1000: "tab:red"}
 
 #####################
 ##### ROUGHNESS #####
 #####################
 
-def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40]):
+def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40], save=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(12,10))
     # fig.suptitle("Roughness evolution under different noise types")
@@ -38,9 +40,10 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40]):
 
     for i, (typenoise, typelabel) in enumerate(zip(["TimeDep", "Columnar"], ["Time-dependent noise", "Columnar noise"])
     ):
-
+        print("#", typenoise)
         for j, (delta, deltaname) in enumerate(zip([0, np.arctan(5)], ["0", "atan5"])):
 
+            print("##", deltaname)
             # select rows for this noise type and delta
             mask = mask = (
                 (avg_df["typenoise"] == typenoise)
@@ -59,11 +62,13 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40]):
                 K = row["K"]
                 
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
+                
+                print("\t", fr"$t_\star$({L}) = {t_cross}.")
 
                 ax[j,i].scatter(t, mean_roughness, label=r"$L=$" + str(L), marker=markerdict[L])
 
                 ax[j,i].vlines(t_cross, ymin=np.min(mean_roughness), ymax=np.max(mean_roughness),
-                                colors='gray', linestyles='dotted', label=r"$t_\star=$"+f"{np.round(t_cross,1)}")
+                                colors=vlinecolordict[L], linestyles='dotted', label=r"$t_\star=$"+f"{np.round(t_cross,1)}")
                 
             ax[j,i].set_xscale('log')
             ax[j,i].set_yscale('log')
@@ -86,7 +91,8 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40]):
     ax[1,1].legend()
 
     plt.tight_layout()
-    plt.savefig("Figures/roughness_evolution.png", dpi=300)
+    if save:
+        plt.savefig("Figures/roughness_evolution.png", dpi=300)
     plt.show()
 
 
@@ -94,7 +100,7 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40]):
 ##### HEIGHT-DIFFERENCE #####
 #############################
 
-def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
+def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, save=False):
     
     fig, ax = plt.subplots(2, 2, figsize=(12,10))
     # fig.suptitle("Height-difference correlation evolution under different noise types, for $L=$" + str(L))
@@ -126,13 +132,13 @@ def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
                 
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
 
-                for ti in range(len(t))[::4]:
+                for ti in range(len(t))[::t_intervals]:
 
                     if t[ti] > 0 and t[ti] < t_cross:
 
                         rlen = mean_heightheight.shape[1] # we plot up to half of this since the system is periodic
                         rrange = np.array(range(rlen))
-                        ax[j,i].scatter(rrange[:int(rlen/2)], mean_heightheight[ti,:int(rlen/2)], label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L])
+                        ax[j,i].scatter(rrange[:rlen//2], mean_heightheight[ti,:rlen//2], label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L])
 
             ax[j,i].set_xscale('log')
             ax[j,i].set_yscale('log')
@@ -149,8 +155,8 @@ def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
     ax[1,0].loglog(rrange[1:int(rlen/16)], rrange[1:int(rlen/16)]**(2*alpha_loc_dict["TimeDep"]["KPZ"])/20, label=r"$\alpha_{KPZ}=1/2$", linestyle="--", color="k")
 
     # scaling as r^(2\alpha) = r^2 for alpha_loc approx 1 (EW/KPZ)
-    ax[0,1].loglog(rrange[1:int(rlen/16)], rrange[1:int(rlen/16)]**(2*alpha_loc_dict["Columnar"]["EW"])/20, label=r"$\alpha_{loc}^{EW}=1$", linestyle="--", color="k")
-    ax[1,1].loglog(rrange[1:int(rlen/16)], rrange[1:int(rlen/16)]**(2*alpha_loc_dict["Columnar"]["KPZ"])/20, label=r"$\alpha_{loc}^{KPZ}=0.96$", linestyle="--", color="k")
+    ax[0,1].loglog(rrange[1:int(rlen/16)], rrange[1:int(rlen/16)]**(2*alpha_loc_dict["Columnar"]["EW"])/50, label=r"$\alpha_{loc}^{EW}=1$", linestyle="--", color="k")
+    ax[1,1].loglog(rrange[1:int(rlen/32)], rrange[1:int(rlen/32)]**(2*alpha_loc_dict["Columnar"]["KPZ"])/40, label=r"$\alpha_{loc}^{KPZ}=0.96$", linestyle="--", color="k")
 
     ax[0,0].legend()
     ax[0,1].legend()
@@ -158,7 +164,8 @@ def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40]):
     ax[1,1].legend()
 
     plt.tight_layout()
-    plt.savefig(f"Figures/heighdifference_evolution_{L}.png", dpi=300)
+    if save:
+        plt.savefig(f"Figures/heighdifference_evolution_{L}.png", dpi=300)
     plt.show()
 
 
@@ -177,7 +184,7 @@ def analytical_Larkin_structurefactor(k, t, sigma, nu, d=1):
     return S_phi
 
 
-def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False, sigma=1):
+def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, analytical=False, sigma=1, save=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(12,10))
     # fig.suptitle("Structure factor under different noise types, for $L=$" + str(L))
@@ -208,7 +215,7 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
 
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
 
-                for ti in range(len(t))[::4]:
+                for ti in range(len(t))[::t_intervals]:
 
                     if t[ti] > 0 and t[ti] < t_cross:
 
@@ -234,10 +241,10 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
 
     # # scaling as k^(-2*alpha_s-1) for alpha_s approx 3/2 (EW) or 1.4 (KPZ)
     ax[0,1].loglog(krange[3:int(klen/4)], krange[3:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["EW"]-1) / 1000, label=r"$\alpha_s^{EW}=3/2$", linestyle="--", color="k")
-    ax[1,1].loglog(krange[5:int(klen/4)], krange[5:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["KPZ"]-1) / 50, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
+    ax[1,1].loglog(krange[10:int(klen/4)], krange[10:int(klen/4)]**(-2*alpha_s_dict["Columnar"]["KPZ"]-1) / 50, label=r"$\alpha_s^{KPZ}=1.4$", linestyle="--", color="k")
 
     ax[1,0].set_ylim(0,1e3)
-    ax[1,1].set_ylim(0,1e5)
+    ax[1,1].set_ylim(0,1e4)
 
     ax[0,0].text(0.5, 0.6, r"$k^{-2\alpha_s+1}$", fontsize=12, transform=ax[0,0].transAxes)
     ax[1,0].text(0.5, 0.65, r"$k^{-2\alpha_s+1}$", fontsize=12, transform=ax[1,0].transAxes)
@@ -248,11 +255,11 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
 
     # Add analytical Larkin structure factor for comparison to Columnar EW  case
     if analytical == True:
-        for ti in range(len(t))[::4]:
+        for ti in range(len(t))[::t_intervals]:
             t_cross = tx["Columnar"]["EW"] * L**(z_dict["Columnar"]["EW"])
             if t[ti] > 0 and t[ti] < t_cross:
                 Sphi = analytical_Larkin_structurefactor(krange, t[ti], sigma=sigma, nu=Ks[1], d=1)
-                ax[0,1].loglog(krange[1:int(klen/2)], Sphi[1:int(klen/2)], linestyle=":")#, label=f"Anaytical (Larkin) $t={np.round(t[ti],1)}$")
+                ax[0,1].loglog(krange[1:int(klen/4)], Sphi[1:int(klen/4)], linestyle=":")#, label=f"Anaytical (Larkin) $t={np.round(t[ti],1)}$")
                         
         handles.append(Line2D([0], [0], color='black', linestyle=':'))
         labels.append('Analytical (Larkin)')
@@ -263,17 +270,18 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], analytical=False
     ax[1,1].legend()
 
     plt.tight_layout()
-    plt.savefig(f"Figures/structurefactor_evolution_{L}.png", dpi=300)
+    if save:
+        plt.savefig(f"Figures/structurefactor_evolution_{L}.png", dpi=300)
     plt.show()
 
 ############################
 ##### PHASE COVARIANCE #####
 ############################
 
-def plot_phasecovariance_evolution(avg_df, L, T, tx, Ks=[1,40]):
+def plot_phasecovariance_evolution(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, save=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
-    fig.suptitle("Phase covariance evolution under different noise types, for $L=$" + str(L))
+    # fig.suptitle("Phase covariance evolution under different noise types, for $L=$" + str(L))
 
     fig.supxlabel(r"$r$")
     fig.supylabel(r"$C(r,t)$")
@@ -298,16 +306,15 @@ def plot_phasecovariance_evolution(avg_df, L, T, tx, Ks=[1,40]):
                 mean_phasecovariance = row["mean_phasecovariance"]
                 L = row["L"]
                 K = row["K"]
-                M = row["M"]
 
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
 
-                for ti in range(mean_phasecovariance.shape[0])[::4]:
+                for ti in range(len(t))[::t_intervals]:
 
                     if t[ti] > 0 and t[ti] < t_cross:
                         rlen = mean_phasecovariance.shape[1] # we plot up to half of this since the system is periodic
                         rrange = np.array(range(rlen))
-                        ax[j,i].scatter(rrange[:int(rlen/2)], mean_phasecovariance[ti,:int(rlen/2)], label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L])
+                        ax[j,i].scatter(rrange[:rlen//2], mean_phasecovariance[ti,:rlen//2], label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L])
                     
                 ax[j,i].text(0.8, 0.95, fr'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
@@ -322,4 +329,6 @@ def plot_phasecovariance_evolution(avg_df, L, T, tx, Ks=[1,40]):
     ax[1,1].legend()
 
     plt.tight_layout()
+    if save:
+        plt.savefig(f"Figures/phasecovariance_evolution_{L}.png", dpi=300)
     plt.show()

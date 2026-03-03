@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patheffects as pe
 from scipy.integrate import quad
 import scienceplots
 
@@ -21,13 +22,13 @@ beta_dict = {"TimeDep": {"EW": alpha_dict["TimeDep"]["EW"]/z_dict["TimeDep"]["EW
 delta_to_label = {"0": "EW", "atan5": "KPZ"}
 
 # Markers for different system sizes
-markerdict = {500: "o", 250: "x", 125: "^", 1000: "s"}
+markerdict = {125: "^", 250: "x", 500: "o", 1000: "s"}
 
 #####################
 ##### ROUGHNESS #####
 #####################
 
-def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40]):
+def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40], save=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(12,10))
     # fig.suptitle("Roughness collapse under different noise types")
@@ -92,7 +93,8 @@ def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40]):
     ax[1,1].legend()
 
     plt.tight_layout()
-    plt.savefig("Figures/roughness_collapse.png", dpi=300)
+    if save:
+        plt.savefig("Figures/roughness_collapse.png", dpi=300)
     plt.show()
 
 
@@ -100,7 +102,7 @@ def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40]):
 ##### HEIGHT-DIFFERENCE #####
 #############################
 
-def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
+def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, save=False):
     
     fig, ax = plt.subplots(2, 2, figsize=(12,10))
     # fig.suptitle("Height-difference correlation collapse under different noise types, for $L=$" + str(L))
@@ -136,7 +138,7 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
 
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**z
                 
-                for ti in range(len(t))[::4]:
+                for ti in range(len(t))[::t_intervals]:
 
                     if t[ti] > 0 and t[ti] < t_cross:
 
@@ -144,8 +146,8 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
                         rrange = np.array(range(rlen))
 
                         # Collapse variables
-                        rt1z = rrange[:int(rlen/2)] / t[ti]**(1/z)
-                        Gt2az = mean_heightheight[ti,:int(rlen/2)] / t[ti]**(2*alpha/z)
+                        rt1z = rrange[:rlen//2] / t[ti]**(1/z)
+                        Gt2az = mean_heightheight[ti,:rlen//2] / t[ti]**(2*alpha/z)
 
                         ax[j,i].scatter(rt1z, Gt2az, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L], alpha=0.7)
                     
@@ -160,12 +162,12 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
     ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
     # scaling as r^(2\alpha) = r^1 for alpha = 1/2 (EW/KPZ)
-    ax[0,0].loglog(rt1z[1:int(rlen/32)], rt1z[1:int(rlen/32)]**(2*alpha_loc_dict["TimeDep"]["EW"]) /140, label=r"$\alpha_{EW}=1/2$", linestyle="--", color="k")
-    ax[1,0].loglog(rt1z[1:int(rlen/64)], rt1z[1:int(rlen/64)]**(2*alpha_loc_dict["TimeDep"]["KPZ"])/15, label=r"$\alpha_{KPZ}=1/2$", linestyle="--", color="k")
+    ax[0,0].loglog(rt1z[1:int(rlen/64)]/2, (rt1z[1:int(rlen/64)]/2)**(2*alpha_loc_dict["TimeDep"]["EW"]) /140, label=r"$\alpha_{EW}=1/2$", linestyle="--", color="k")
+    ax[1,0].loglog(rt1z[1:int(rlen/64)]/8, (rt1z[1:int(rlen/64)]/8)**(2*alpha_loc_dict["TimeDep"]["KPZ"])/20, label=r"$\alpha_{KPZ}=1/2$", linestyle="--", color="k")
 
     # scaling as r^(2\alpha) = r^2 for alpha_loc approx 1 (EW/KPZ)
-    ax[0,1].loglog(rt1z[2:int(rlen/16)], rt1z[2:int(rlen/16)]**(2*alpha_loc_dict["Columnar"]["EW"])/500, label=r"$\alpha_{loc}^{EW}=1$", linestyle="--", color="k")
-    ax[1,1].loglog(rt1z[2:int(rlen/32)], rt1z[2:int(rlen/32)]**(2*alpha_loc_dict["Columnar"]["KPZ"])/50, label=r"$\alpha_{loc}^{KPZ}=0.96$", linestyle="--", color="k")
+    ax[0,1].loglog(rt1z[2:int(rlen/32)], rt1z[2:int(rlen/32)]**(2*alpha_loc_dict["Columnar"]["EW"])/800, label=r"$\alpha_{loc}^{EW}=1$", linestyle="--", color="k")
+    ax[1,1].loglog(rt1z[2:int(rlen/64)], rt1z[2:int(rlen/64)]**(2*alpha_loc_dict["Columnar"]["KPZ"])/80, label=r"$\alpha_{loc}^{KPZ}=0.96$", linestyle="--", color="k")
 
     ax[0,0].legend()
     ax[0,1].legend()
@@ -173,7 +175,8 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
     ax[1,1].legend()
 
     plt.tight_layout()
-    plt.savefig(f"Figures/heighdifference_collapse_{L}.png", dpi=300)
+    if save:
+        plt.savefig(f"Figures/heighdifference_collapse_{L}.png", dpi=300)
     plt.show()
 
 
@@ -181,7 +184,7 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40]):
 ##### STRUCTURE FACTOR #####
 ############################
 
-def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
+def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, save=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(12,10))
     # fig.suptitle("Structure factor collapse under different noise types, for $L=$" + str(L))
@@ -216,7 +219,7 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
 
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
 
-                for ti in range(len(t))[::4]:
+                for ti in range(len(t))[::t_intervals]:
 
                     if t[ti] > 0 and t[ti] < t_cross:
 
@@ -272,7 +275,8 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
     ax[1,1].legend()
 
     plt.tight_layout()
-    plt.savefig(f"Figures/structurefactor_collapse_{L}.png", dpi=300)
+    if save:
+        plt.savefig(f"Figures/structurefactor_collapse_{L}.png", dpi=300)
     plt.show()
 
 
@@ -280,23 +284,31 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40]):
 ##### PHASE COVARIANCE #####
 ############################
 
+
 def covariance_constants(tti, C_Phi_t, beta, z, fun, x0=0.5):
     a_1 = C_Phi_t[0] / (tti**(2*beta) * fun[0])
     target = a_1 * tti**(2*beta) * fun[x0]
 
-    r_index = int(np.argmin(np.abs(C_Phi_t - target)))
-    r_other_index = r_index + 1 if target < C_Phi_t[r_index] else r_index - 1
-
-    # linear interpolation in r between (r_index, C[r_index]) and (r_other_index, C[r_other_index])
-    C0 = C_Phi_t[r_index]
-    C1 = C_Phi_t[r_other_index]
-    r0 = r_index
-    r1 = r_other_index
-
-    if C1 == C0:
-        r_intermediate = float(r0)
-    else:
-        r_intermediate = r0 + (target - C0) * (r1 - r0) / (C1 - C0)
+    # find the FIRST r where C drops below target (C is decreasing initially)
+    C = C_Phi_t[:len(C_Phi_t)//2]
+    rr = np.arange(C.size)
+    
+    # If target is above C(0) or below the min, no meaningful crossing in-range
+    if target >= C[0] or target <= C.min():
+        return np.nan, np.nan
+    
+    # first index where C <= target
+    idx = np.argmax(C <= target)  # returns 0 if never true; guarded by check above
+    
+    # bracket between idx-1 (above target) and idx (below target)
+    i0 = idx - 1
+    i1 = idx
+    
+    C0, C1 = C[i0], C[i1]
+    r0, r1 = float(i0), float(i1)
+    
+    # linear interpolation
+    r_intermediate = r0 + (target - C0) * (r1 - r0) / (C1 - C0)
 
     a_2 = (tti**(1/z)) * x0 / r_intermediate
     return a_1, a_2
@@ -306,7 +318,7 @@ with open("airy_1_values.txt", 'r') as f:
     Airy_1 = {float(line.split(" ")[0]): float(line.split(" ")[1]) for line in f.readlines()}
 
 
-def larkin_inv_ft(x, eps=1e-6, rtol=1e-10, atol=1e-12, limit=300):
+def larkin_inv_ft(x, eps=1e-6, rtol=1e-10, atol=1e-12, limit=300, sigma=0.102):
     """
     Computes  F^{-1}[ ((1 - e^{-k^2})^2 / k^4) ](x)
     using the convention:
@@ -329,6 +341,7 @@ def larkin_inv_ft(x, eps=1e-6, rtol=1e-10, atol=1e-12, limit=300):
     float
         Value of the inverse transform at x.
     """
+    x = x/1.35
 
     def g(kappa):
         ak = abs(kappa)
@@ -339,10 +352,10 @@ def larkin_inv_ft(x, eps=1e-6, rtol=1e-10, atol=1e-12, limit=300):
 
     val, _ = quad(lambda kappa: np.cos(2*np.pi*kappa*x) * g(kappa), 0.0, np.inf,
                   epsrel=rtol, epsabs=atol, limit=limit)
-    return val / np.pi   # (1/2π) over R -> (1/π) cosine integral
+    return 4*sigma*val  # (1/2π) over R -> (1/π) cosine integral
 
 
-def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40], nu=40.0, dx=1.0):
+def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, nu=40.0, dx=1.0, save=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
     # fig.suptitle("Phase covariance collapse under different noise types, for $L=$" + str(L))
@@ -380,7 +393,6 @@ def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40], nu=40.0, dx=1.0):
                 mean_phasecovariance = row["mean_phasecovariance"]
                 L = row["L"]
                 K = row["K"]
-                M = row["M"]
 
                 # Exponents
                 z = z_dict[typenoise][delta_to_label[deltaname]]
@@ -389,7 +401,7 @@ def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40], nu=40.0, dx=1.0):
             
                 t_cross = tx[typenoise][delta_to_label[deltaname]] * L**(z_dict[typenoise][delta_to_label[deltaname]])
 
-                for ti in range(len(t))[::4]:
+                for ti in range(len(t))[::t_intervals]:
 
                     if t[ti] > 0 and t[ti] < t_cross:
 
@@ -401,15 +413,20 @@ def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40], nu=40.0, dx=1.0):
                         a_2_dict[typenoise][deltaname].append(a_2)
 
                         # Collapse variables
-                        a2rt1z = rrange[:int(rlen/2)] * a_2 / t[ti]**(1/z_dict[typenoise][delta_to_label[deltaname]])
-                        Ct2ba1 = mean_phasecovariance[ti,:int(rlen/2)] / (a_1 * t[ti]**(2*beta_dict[typenoise][delta_to_label[deltaname]]))
+                        a2rt1z = rrange[:rlen//2] * a_2 / t[ti]**(1/z_dict[typenoise][delta_to_label[deltaname]])
+                        Ct2ba1 = mean_phasecovariance[ti,:rlen//2] / (a_1 * t[ti]**(2*beta_dict[typenoise][delta_to_label[deltaname]]))
 
                         ax[j,i].scatter(a2rt1z, Ct2ba1, label=f"$t=${np.round(t[ti],2)}", marker=markerdict[L], alpha=0.7)
 
                 ax[j,i].text(0.8, 0.95, fr'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
 
-                ax[j,i].plot(list(Airy_1.keys()), list(Airy_1.values()), lw=2, color="black", linestyle="--", label=r"Airy$_1$")
-                ax[j,i].plot(np.linspace(0, 1, 400), [larkin_inv_ft(rr) for rr in np.linspace(0, 1, 400)], lw=2, color="black", label="Larkin") 
+                # Airy_1 and F^{-1}(Larkin) values 
+                ax[j,i].plot(list(Airy_1.keys()), list(Airy_1.values()),
+                             lw=2, color="white", linestyle="--", label=r"Airy$_1$",
+                             path_effects=[pe.Stroke(linewidth=3, foreground='k'), pe.Normal()])
+                ax[j,i].plot(np.linspace(0, 1, 400), [larkin_inv_ft(rr) for rr in np.linspace(0, 1, 400)],
+                             lw=2, color="white", label="Larkin",
+                             path_effects=[pe.Stroke(linewidth=3, foreground='k'), pe.Normal()]) 
 
     ax[0,0].set_xlim(0,1)
     ax[0,1].set_xlim(0,1)
@@ -427,6 +444,8 @@ def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40], nu=40.0, dx=1.0):
     ax[1,1].legend()
 
     plt.tight_layout()
+    if save:
+        plt.savefig(f"Figures/phasecovariance_collapse_{L}.png", dpi=300)
     plt.show()
 
     return a_1_dict, a_2_dict
