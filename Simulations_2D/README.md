@@ -1,4 +1,4 @@
-# Structure of this directory (Simulations_1D)
+# Structure of this directory (Simulations_2D)
 
 
 ## Integration scripts and helper functions

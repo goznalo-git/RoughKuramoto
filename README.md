@@ -13,18 +13,12 @@ Basic code files
 - deterministic_terms.ipynb
 - gaussian_universality.ipynb
 
-Notebooks for analysis of the simulation data at `Simulations/`. The final figures are saved at `Figures/`
-- 1-Kuramoto-Sakaguchi.ipynb 
-- 2-Roughness.ipynb
-- 3-Correlations.ipynb
-- 4-StructureFactor.ipynb
-- 5-Covariance.ipynb
+`Notebooks_1D/` and `Notebooks_2D/`: the notebooks for analysis of the simulation data at `Simulations_1D/` and `Simulations_2D/`, respectively, are found here. See the `README.md` files within for more information.
 
+`Simulations_1D/` and `Simulations_2D` directories: the models are integrated there. See the `README.md` files within for more information. 
 
-Helpers and custom functions for the notebooks
-- surface_functions.py
-- plotting_helpers.py
-
-`Simulations/` and `Simulations_2d` directories: the models are integrated there. See the `README.md` files within for more information.
+Utilities shared between the simulations in 1D and 2D are found in and imported from
+- integration_functions.py 
+- aux_functions.py
 
 
