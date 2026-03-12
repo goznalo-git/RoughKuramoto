@@ -22,10 +22,13 @@ def step(topology, th, N, omega, K, delta, dt, stochastic, rng):
     # Euler-Maruyama case, with sqrt(D*dt) * normalized noise.
     if stochastic is not None:
         omega = rng.normal(0, np.sqrt(stochastic/dt), size=N)
+        if topology == "2d":
+            omega= omega.reshape(int(np.sqrt(N)), int(np.sqrt(N)))
         
     if topology == "1d":
         dtheta = omega + K * neighbor_sum_1d(th, delta)
     else:
+        # print(omega.shape, neighbor_sum_2d(th, delta).shape)
         dtheta = omega + K * neighbor_sum_2d(th, delta)
         
     return th + dt * dtheta

@@ -3,6 +3,8 @@ import pandas as pd
 import os, sys
 import time
 
+import sys
+sys.path.append('..')
 from aux_functions import order_parameter, timer, atomic_write_pickle_df
 from integration_functions import kuramoto_sakaguchi_euler
 
@@ -14,20 +16,19 @@ elif sys.argv[1] == "atan5":
     delta = np.arctan(5)
     deltaname = "atan5"
 
-print("TimeDep")
+print("Columnar")
 
 # 1D ring
 L = int(sys.argv[2])
 K = float(sys.argv[3])
-T = 20000  # a bit above 100000 to allow for the next log-scale datapoint (startsampling*multsampling**n) to be included.
+T = 20000  # a bit above 100000 to allow for the next log-scale datapoint
 Nt = 100 * T
 startsampling = 100
 multsampling = 1.6
-D = 0.01
 M = int(sys.argv[4])
 
 # Save ONE file per run, in a corresponding folder
-out_dir = f"OutputTimeDep/delta{deltaname}/L{L}_K{K}"
+out_dir = f"OutputColumnar/delta{deltaname}/L{L}_K{K}"
 os.makedirs(out_dir, exist_ok=True)
 
 print("## Delta", deltaname)
@@ -48,7 +49,7 @@ with timer():
 
         theta0 = np.zeros((L, 1))
 
-        # as well as the fields computed
+        # fields computed
         t, phases = kuramoto_sakaguchi_euler(
             "1d",
             L,
@@ -60,7 +61,6 @@ with timer():
             Nt,
             startsampling=startsampling,
             multsampling=multsampling,
-            stochastic=D,
             seed=seed,
         )
 
@@ -68,7 +68,7 @@ with timer():
 
         sim_id = f"L{L}_K{K}_seed{seed}"  # composite unique ID
 
-        # one row per simulation; seed as identifier
+        # Build one-row DataFrame for this simulation
         row_df = pd.DataFrame(
             [
                 {
@@ -81,7 +81,6 @@ with timer():
                     "Nt": Nt,
                     "startsampling": startsampling,
                     "multsampling": multsampling,
-                    "D": D,
                     "omega": omega,
                     "t": t,
                     "phases": phases,

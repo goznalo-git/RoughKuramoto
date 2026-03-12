@@ -5,6 +5,8 @@ import scienceplots
 
 plt.style.use(["science","no-latex"])
 
+import sys
+sys.path.append('..')
 ### TO CLEAN ### 
 # All the for loops over rows, since we now filter K, L, delta before (there should only be one row) 
 # Remove M
@@ -92,7 +94,7 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40], save=False):
 
     plt.tight_layout()
     if save:
-        plt.savefig("Figures/roughness_evolution.png", dpi=300)
+        plt.savefig("Figures/Evolution/roughness_evolution.png", dpi=300)
     plt.show()
 
 
@@ -165,7 +167,7 @@ def plot_heightdifference_evolution(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, 
 
     plt.tight_layout()
     if save:
-        plt.savefig(f"Figures/heighdifference_evolution_{L}.png", dpi=300)
+        plt.savefig(f"Figures/Evolution/heighdifference_evolution_{L}.png", dpi=300)
     plt.show()
 
 
@@ -271,7 +273,7 @@ def plot_structurefactor_evolution(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, a
 
     plt.tight_layout()
     if save:
-        plt.savefig(f"Figures/structurefactor_evolution_{L}.png", dpi=300)
+        plt.savefig(f"Figures/Evolution/structurefactor_evolution_{L}.png", dpi=300)
     plt.show()
 
 ############################
@@ -330,5 +332,5 @@ def plot_phasecovariance_evolution(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, s
 
     plt.tight_layout()
     if save:
-        plt.savefig(f"Figures/phasecovariance_evolution_{L}.png", dpi=300)
+        plt.savefig(f"Figures/Evolution/phasecovariance_evolution_{L}.png", dpi=300)
     plt.show()

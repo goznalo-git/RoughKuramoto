@@ -94,7 +94,7 @@ def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40], save=False):
 
     plt.tight_layout()
     if save:
-        plt.savefig("Figures/roughness_collapse.png", dpi=300)
+        plt.savefig("Figures/Collapse/roughness_collapse.png", dpi=300)
     plt.show()
 
 
@@ -176,7 +176,7 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, s
 
     plt.tight_layout()
     if save:
-        plt.savefig(f"Figures/heighdifference_collapse_{L}.png", dpi=300)
+        plt.savefig(f"Figures/Collapse/heighdifference_collapse_{L}.png", dpi=300)
     plt.show()
 
 
@@ -276,7 +276,7 @@ def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, sa
 
     plt.tight_layout()
     if save:
-        plt.savefig(f"Figures/structurefactor_collapse_{L}.png", dpi=300)
+        plt.savefig(f"Figures/Collapse/structurefactor_collapse_{L}.png", dpi=300)
     plt.show()
 
 
@@ -314,7 +314,7 @@ def covariance_constants(tti, C_Phi_t, beta, z, fun, x0=0.5):
     return a_1, a_2
 
 
-with open("airy_1_values.txt", 'r') as f:
+with open("../airy_1_values.txt", 'r') as f:
     Airy_1 = {float(line.split(" ")[0]): float(line.split(" ")[1]) for line in f.readlines()}
 
 
@@ -445,7 +445,7 @@ def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, nu
 
     plt.tight_layout()
     if save:
-        plt.savefig(f"Figures/phasecovariance_collapse_{L}.png", dpi=300)
+        plt.savefig(f"Figures/Collapse/phasecovariance_collapse_{L}.png", dpi=300)
     plt.show()
 
     return a_1_dict, a_2_dict
