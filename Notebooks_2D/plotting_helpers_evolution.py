@@ -38,7 +38,7 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40], save=False):
     # fig.suptitle("Roughness evolution under different noise types")
 
     fig.supxlabel(r"$\log t$")
-    fig.supylabel(r"$\log W$")
+    fig.supylabel(r"$\log W(L,t)$")
 
     for i, (typenoise, typelabel) in enumerate(zip(["TimeDep", "Columnar"], ["Time-dependent noise", "Columnar noise"])
     ):

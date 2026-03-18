@@ -34,7 +34,7 @@ def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40], save=False):
     # fig.suptitle("Roughness collapse under different noise types")
 
     fig.supxlabel(r"$\log (t/L^z)$")
-    fig.supylabel(r"$\log (W / L^\alpha)$")
+    fig.supylabel(r"$\log (W(L,t) / L^\alpha)$")
 
     for i, (typenoise, typelabel) in enumerate(zip(["TimeDep", "Columnar"], ["Time-dependent noise", "Columnar noise"])
     ):

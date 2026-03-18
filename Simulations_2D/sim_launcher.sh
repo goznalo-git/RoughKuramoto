@@ -14,8 +14,8 @@
 # Modify this according to the system
 source ../../../scientific_kernel/bin/activate   
 
-L=500
-Ksto=1           # 2024 paper
+L_VALUES=(125 250 500)
+Ksto=1           # 2024 paper (K = 10 for TimeDep, atan5 to avoid crossover)
 Kcol=40          # 2023 paper
 M=100
 
@@ -25,18 +25,30 @@ M=100
 ####################
 
 echo "## Running simulations. Date: `date`"
-echo "Parameters: $L $Ksto $Kcol $M" 
+echo "Parameters: $Ksto $Kcol $M" 
 
-# Time dependent
-nohup python -u int_sto.py atan5 $L $Ksto $M > Logs/TimeDep/out_atan5_${L}_${Ksto}_${M}.log 2>&1 &
-# sleep 20
-nohup python -u int_sto.py 0 $L $Ksto $M > Logs/TimeDep/out_0_${L}_${Ksto}_${M}.log 2>&1 &
+for L in "${L_VALUES[@]}"; do
+    echo "Launching simulation for L=$L at $(date)"
+    
+    # Run in background with nohup
+    # We use a unique log name for each L
+        
+    # Time dependent
+    nohup python -u int_sto.py atan5 $L $Ksto $M > Logs/TimeDep/out_atan5_${L}_${Ksto}_${M}.log 2>&1 &
+    sleep 2
+    nohup python -u int_sto.py 0 $L $Ksto $M > Logs/TimeDep/out_0_${L}_${Ksto}_${M}.log 2>&1 &
+    sleep 2
+    
+    # Columnar (requires a much higher K to see saturation)
+    nohup python -u int_col.py atan5 $L $Kcol $M  > Logs/Columnar/out_atan5_${L}_${Kcol}_${M}.log 2>&1 &
+    sleep 2
+    nohup python -u int_col.py 0 $L $Kcol $M  > Logs/Columnar/out_0_${L}_${Kcol}_${M}.log 2>&1 &
+    sleep 2
+    
+done
 
-# Columnar (requires a much higher K to see saturation)
-nohup python -u int_col.py atan5 $L $Kcol $M  > Logs/Columnar/out_atan5_${L}_${Kcol}_${M}.log 2>&1 &
-# sleep 20
-nohup python -u int_col.py 0 $L $Kcol $M  > Logs/Columnar/out_0_${L}_${Kcol}_${M}.log 2>&1 &
 
+echo "All simulations launched. Use 'ps aux | grep python' to monitor."
 
 ####################
 ## Small coupling ##

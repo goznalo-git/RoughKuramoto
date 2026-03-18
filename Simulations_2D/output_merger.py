@@ -3,6 +3,8 @@ import sys
 import glob
 import pandas as pd
 
+import sys
+sys.path.append('..')
 from aux_functions import atomic_write_pickle_df
 
 def merge_one_delta(delta_dir: str, out_path: str):
