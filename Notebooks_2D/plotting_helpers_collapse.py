@@ -18,7 +18,7 @@ alpha_dict = {"TimeDep": {"EW": 1/2, "KPZ": 1/2}, "Columnar": {"EW": 3/2, "KPZ":
 alpha_s_dict = {"TimeDep": {"EW": 1/2, "KPZ": 1/2}, "Columnar": {"EW": 3/2, "KPZ": 1.4}}  # anomalous scaling, only for columnar noise
 alpha_loc_dict = {"TimeDep": {"EW": 1/2, "KPZ": 1/2}, "Columnar": {"EW": 1, "KPZ": 0.96}} # anomalous scaling, only for columnar noise
 beta_dict = {"TimeDep": {"EW": alpha_dict["TimeDep"]["EW"]/z_dict["TimeDep"]["EW"], "KPZ": alpha_dict["TimeDep"]["KPZ"]/z_dict["TimeDep"]["KPZ"]}, 
-             "Columnar": {"EW": alpha_dict["Columnar"]["EW"]/z_dict["Columnar"]["EW"], "KPZ": alpha_dict["Columnar"]["KPZ"]/z_dict["Columnar"]["KPZ"]}}
+             "Columnar": {"EW": 0.34, "KPZ": 0.93}}
 delta_to_label = {"0": "EW", "atan5": "KPZ"}
 
 # Markers for different system sizes
@@ -47,7 +47,7 @@ def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40], save=False):
                 & (avg_df["deltaname"] == deltaname)
                 & (avg_df["T"] == T)
                 & ((avg_df["K"] == Ks[0]) | (avg_df["K"] == Ks[1]))
-                # & (avg_df["L"] < 1000)
+                & (avg_df["L"] < 1000)
             )
             sub = avg_df[mask]
 
@@ -77,15 +77,15 @@ def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40], save=False):
     ax[1,0].set_ylabel(r"KPZ  ($\delta=\arctan5$)", fontsize=12)
 
     # Scalings
-    ax[0,0].loglog(t[1:-8:] / L**(z_dict["TimeDep"]["EW"]), (t[1:-8:] / L ** (alpha_dict["TimeDep"]["EW"])) **(beta_dict["TimeDep"]["EW"]) /190,
-                label=r"$\beta_{EW}=1/4$", linestyle="--", color="k")
-    ax[1,0].loglog(t[1:-8:] / L**(z_dict["TimeDep"]["KPZ"]), (t[1:-8:] / L ** (alpha_dict["TimeDep"]["KPZ"])) **(beta_dict["TimeDep"]["KPZ"]) /100,
-                label=r"$\beta_{KPZ}=1/3$", linestyle="--", color="k")
+    # ax[0,0].loglog(t[1:-8:] / L**(z_dict["TimeDep"]["EW"]), (t[1:-8:] / L ** (alpha_dict["TimeDep"]["EW"])) **(beta_dict["TimeDep"]["EW"]) /190,
+    #             label=r"$\beta_{EW}=1/4$", linestyle="--", color="k")
+    # ax[1,0].loglog(t[1:-8:] / L**(z_dict["TimeDep"]["KPZ"]), (t[1:-8:] / L ** (alpha_dict["TimeDep"]["KPZ"])) **(beta_dict["TimeDep"]["KPZ"]) /100,
+    #             label=r"$\beta_{KPZ}=1/3$", linestyle="--", color="k")
 
-    ax[0,1].loglog(t[1:-12:] / L**(z_dict["Columnar"]["EW"]), (t[1:-12:] / L ** (alpha_dict["Columnar"]["EW"])) **(beta_dict["Columnar"]["EW"]) /80,
-                label=r"$\beta_{EW}=3/4$", linestyle="--", color="k")
-    ax[1,1].loglog(t[1:-12:] / L**(z_dict["Columnar"]["KPZ"]), (t[1:-12:] / L ** (alpha_dict["Columnar"]["KPZ"])) **(beta_dict["Columnar"]["KPZ"]) /20,
-                label=r"$\beta_{KPZ}\approx 0.7867$", linestyle="--", color="k")
+    # ax[0,1].loglog(t[1:-12:] / L**(z_dict["Columnar"]["EW"]), (t[1:-12:] / L ** (alpha_dict["Columnar"]["EW"])) **(beta_dict["Columnar"]["EW"]) /80,
+    #             label=r"$\beta_{EW}=3/4$", linestyle="--", color="k")
+    # ax[1,1].loglog(t[1:-12:] / L**(z_dict["Columnar"]["KPZ"]), (t[1:-12:] / L ** (alpha_dict["Columnar"]["KPZ"])) **(beta_dict["Columnar"]["KPZ"]) /20,
+    #             label=r"$\beta_{KPZ}\approx 0.7867$", linestyle="--", color="k")
 
     ax[0,0].legend()
     ax[0,1].legend()

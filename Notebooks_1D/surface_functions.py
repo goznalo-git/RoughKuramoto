@@ -148,6 +148,7 @@ def compute_phase_covariance(phases: np.ndarray) -> np.ndarray:
 
 def compute_rescaled_phases(
     phases: np.ndarray,
+    t,
     t0: int,
     deltaTs: Iterable[int],
     beta: float,
@@ -191,7 +192,8 @@ def compute_rescaled_phases(
 
     varphi = np.empty((len(deltaTs), N), dtype=float)
     for i, Deltat in enumerate(deltaTs):
-        varphi[i] = (dphi[t0 + Deltat] - dphi_t0) / (Deltat ** beta)
+        deltaT_good = t[t0 + Deltat] - t[Deltat] 
+        varphi[i] = (dphi[t0 + Deltat] - dphi_t0) / (deltaT_good ** beta)
     return varphi
 
 
