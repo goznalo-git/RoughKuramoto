@@ -28,7 +28,7 @@ markerdict = {125: "^", 250: "x", 500: "o", 1000: "s"}
 ##### ROUGHNESS #####
 #####################
 
-def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40], save=False):
+def plot_roughness_collapse(avg_df, T, tx, Ks, save=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(12,10))
     # fig.suptitle("Roughness collapse under different noise types")
@@ -102,7 +102,7 @@ def plot_roughness_collapse(avg_df, T, tx, Ks=[1,40], save=False):
 ##### HEIGHT-DIFFERENCE #####
 #############################
 
-def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, save=False):
+def plot_heightdifference_collapse(avg_df, L, T, tx, Ks, t_intervals=3, save=False):
     
     fig, ax = plt.subplots(2, 2, figsize=(12,10))
     # fig.suptitle("Height-difference correlation collapse under different noise types, for $L=$" + str(L))
@@ -184,7 +184,7 @@ def plot_heightdifference_collapse(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, s
 ##### STRUCTURE FACTOR #####
 ############################
 
-def plot_structurefactor_collapse(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, save=False):
+def plot_structurefactor_collapse(avg_df, L, T, tx, Ks, t_intervals=3, save=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(12,10))
     # fig.suptitle("Structure factor collapse under different noise types, for $L=$" + str(L))
@@ -355,7 +355,7 @@ def larkin_inv_ft(x, eps=1e-6, rtol=1e-10, atol=1e-12, limit=300, sigma=0.102):
     return 4*sigma*val  # (1/2π) over R -> (1/π) cosine integral
 
 
-def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks=[1,40], t_intervals=3, nu=40.0, dx=1.0, save=False):
+def plot_phasecovariance_collapse(avg_df, L, T, tx, Ks, t_intervals=3, nu=40.0, dx=1.0, save=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(10,10))
     # fig.suptitle("Phase covariance collapse under different noise types, for $L=$" + str(L))
