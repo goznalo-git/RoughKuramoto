@@ -15,8 +15,8 @@
 source ../../../scientific_kernel/bin/activate   
 
 L_VALUES=(125 250 500)
-Ksto=5           # K=1  2024 paper (K = 5 for atan5 to avoid crossover, K = 10 direct crossover to EW in KPZ atan5)
-Kcol=100         # K=40 2023 paper (K = 100 to test the forgetting of initial conditions)
+Ksto=2           # K=1  2024 paper (K = 2 for atan5 to avoid crossover, K = 5,10 direct crossover to EW in KPZ atan5)
+Kcol=80         # K=40 2023 paper (K = 80 to test the forgetting of initial conditions)
 M=100
 
 
