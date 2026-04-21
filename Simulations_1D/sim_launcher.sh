@@ -14,7 +14,7 @@
 # Modify this according to the system
 source ../../../scientific_kernel/bin/activate   
 
-L=1000
+L=10000
 Ksto=1           # 2024 paper
 Kcol=40          # 2023 paper
 M=3000

@@ -74,6 +74,25 @@ def _estimate_moments_from_pdf(pdf_fn, grid_min=-20.0, grid_max=10.0, n=200_000)
     return mu, sigma
 
 
+## Loading TW pre-saved data
+from scipy.interpolate import interp1d
+
+data = np.loadtxt('../tw_data.csv', delimiter=',', skiprows=1)
+s_vals = data[:, 0]
+ds = s_vals[1] - s_vals[0]
+tw_interp = {}
+
+# Create interpolators for each TW distribution
+for col, beta in enumerate([1, 2, 4], start=1):
+    pdf = data[:, col]
+    # Calculate moments from CSV to standardize
+    mu = np.sum(s_vals * pdf) * ds
+    sigma = np.sqrt(np.sum(s_vals**2 * pdf) * ds - mu**2)
+    # Map to standardized coordinates
+    tw_interp[beta] = interp1d((s_vals - mu) / sigma, pdf * sigma, 
+                               kind='cubic', bounds_error=False, fill_value=0.0)
+
+
 def normalized_tw_pdf(x, beta, grid_min=-20.0, grid_max=10.0, n_grid=200_000):
     """
     Standardized Tracy–Widom PDF (mean 0, variance 1) for beta=1,2,4.
@@ -136,9 +155,9 @@ def plot_fluctuations_pdf(avg_df, L, T, tx, Ks, save=False):
                 ax[j,i].plot(xx, gauss_pdf, label='Gaussian N(0,1)')
     
                 # Tracy–Widom PDFs
-                ax[j,i].plot(xx, normalized_tw_pdf(xx, beta=1), label='GOE-TW')
-                ax[j,i].plot(xx, normalized_tw_pdf(xx, beta=2), label='GUE-TW')
-                ax[j,i].plot(xx, normalized_tw_pdf(xx, beta=4), label='GSE-TW')
+                ax[j,i].plot(xx, tw_interp[1](xx), label='GOE-TW')
+                ax[j,i].plot(xx, tw_interp[2](xx), label='GUE-TW')
+                ax[j,i].plot(xx, tw_interp[4](xx), label='GSE-TW')
     
                 # ax[j,i].text(0.8, 0.95, fr'$t_\star={np.round(t_cross,1)}$', fontsize=10, transform=ax[j,i].transAxes)
     
@@ -157,7 +176,7 @@ def plot_fluctuations_pdf(avg_df, L, T, tx, Ks, save=False):
     
     plt.tight_layout()
     if save:
-        plt.savefig(f"Figures/fluctuationPDFs_{L}.png", dpi=300)
+        plt.savefig(f"Figures/Fluctuations/fluctuationPDFs_{L}.png", dpi=300)
     plt.show()
 
 
@@ -203,9 +222,9 @@ def plot_log_fluctuations_pdf(avg_df, L, T, tx, Ks, save=False):
                 ax[j,i].semilogy(xx, gauss_pdf, label='Gaussian N(0,1)')
     
                 # Tracy–Widom PDFs
-                ax[j,i].semilogy(xx, normalized_tw_pdf(xx, beta=1), label='GOE-TW')
-                ax[j,i].semilogy(xx, normalized_tw_pdf(xx, beta=2), label='GUE-TW')
-                ax[j,i].semilogy(xx, normalized_tw_pdf(xx, beta=4), label='GSE-TW')
+                ax[j,i].semilogy(xx, tw_interp[1](xx), label='GOE-TW')
+                ax[j,i].semilogy(xx, tw_interp[2](xx), label='GUE-TW')
+                ax[j,i].semilogy(xx, tw_interp[4](xx), label='GSE-TW')
     
                 # ax[j,i].set_xlim(-1.5,1.5)
                 ax[j,i].set_ylim(1e-4,0.5)
@@ -219,8 +238,13 @@ def plot_log_fluctuations_pdf(avg_df, L, T, tx, Ks, save=False):
     ax[0,1].legend()
     ax[1,0].legend()
     ax[1,1].legend()
+                
+    ax[0,0].set_xlim(-6,6)
+    ax[0,1].set_xlim(-5,5)
+    ax[1,0].set_xlim(-6,6)
+    ax[1,1].set_xlim(-5,5)
     
     plt.tight_layout()
     if save:
-        plt.savefig(f"Figures/fluctuationLogPDFs_{L}.png", dpi=300)
+        plt.savefig(f"Figures/Fluctuations/fluctuationLogPDFs_{L}.png", dpi=300)
     plt.show()
