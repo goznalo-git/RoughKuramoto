@@ -42,6 +42,37 @@ def neighbor_sum_2d(th, delta):
 
     return out
 
+    
+@njit(cache=True)
+def neighbor_sum_3d(th, delta):
+    # periodic nearest neighbors on a 3D torus
+    L0, L1, L2 = th.shape
+    out = np.empty_like(th)
+
+    for i in range(L0):
+        im = L0 - 1 if i == 0 else i - 1
+        ip = 0 if i == L0 - 1 else i + 1
+
+        for j in range(L1):
+            jm = L1 - 1 if j == 0 else j - 1
+            jp = 0 if j == L1 - 1 else j + 1
+
+            for k in range(L2):
+                km = L2 - 1 if k == 0 else k - 1
+                kp = 0 if k == L2 - 1 else k + 1
+
+                c = th[i, j, k]
+                out[i, j, k] = (
+                    np.sin(th[im, j, k] - c - delta) +
+                    np.sin(th[ip, j, k] - c - delta) +
+                    np.sin(th[i, jm, k] - c - delta) +
+                    np.sin(th[i, jp, k] - c - delta) +
+                    np.sin(th[i, j, km] - c - delta) +
+                    np.sin(th[i, j, kp] - c - delta)
+                )
+
+    return out
+
 
 @njit(cache=True)
 def step_1d(th, N, omega, K, delta, dt, stochastic):
@@ -68,6 +99,19 @@ def step_2d(th, N, omega, K, delta, dt, stochastic):
     return th + dt * dtheta
 
 
+@njit(cache=True)
+def step_3d(th, N, omega, K, delta, dt, stochastic):
+    """
+    Perform one Euler or Euler-Maruyama step in 3D.
+    """
+    if stochastic is not None:
+        omega = np.random.normal(0.0, np.sqrt(stochastic / dt), N)
+        omega = omega.reshape(th.shape[0], th.shape[1], th.shape[2])
+
+    dtheta = omega + K * neighbor_sum_3d(th, delta)
+    return th + dt * dtheta
+
+    
 @njit(cache=True)
 def kuramoto_sakaguchi_euler_1d(
     L,
@@ -169,6 +213,57 @@ def kuramoto_sakaguchi_euler_2d(
 
     return t[t_save[:-1]], phases
 
+    
+@njit(cache=True)
+def kuramoto_sakaguchi_euler_3d(
+    L,
+    omega,
+    K,
+    delta,
+    theta0,
+    T,
+    Nt,
+    startsampling,
+    multsampling,
+    stochastic=None,
+    seed=None
+):
+    # Set the random seed
+    if stochastic is not None and seed is not None:
+        np.random.seed(seed)
+
+    N = L * L * L
+    omega = omega.reshape(L, L, L)
+    theta = theta0.copy().reshape(L, L, L)
+
+    # Determine the integration step
+    dt = T / Nt
+    t = np.linspace(0, T, Nt)
+
+    # First estimate the amount n of logarithmic timesteps from
+    # startsampling * multsampling**(n) = Nt
+    logsteps = int(np.ceil(np.log(Nt / startsampling) / np.log(multsampling)))
+
+    # Preallocate output
+    phases = np.empty((logsteps + 1, omega.size), dtype=np.float64)
+    phases[0] = theta.ravel()
+
+    # Integration step, and save logarithmically
+    t_save = np.empty(logsteps + 2, dtype=np.int64)
+    t_save[0] = 0
+    for n in range(logsteps + 1):
+        t_save[n + 1] = np.int64(np.floor(startsampling * multsampling**n))
+
+    save_index = 1
+    for ti in range(1, Nt):
+        theta = step_3d(theta, N, omega, K, delta, dt, stochastic)
+
+        if ti > t_save[save_index]:
+            phases[save_index] = theta.ravel()
+            save_index += 1
+
+    return t[t_save[:-1]], phases
+    
 
 def kuramoto_sakaguchi_euler(
     topology: str,
@@ -189,9 +284,9 @@ def kuramoto_sakaguchi_euler(
 
     dθ_i/dt = ω_i + K * Σ_{j->i} sin(θ_j - θ_i - δ)
 
-    - topology:         "1d" (ring) or "2d" (square torus), nearest-neighbor coupling.
-    - L:                system size (N=L for 1d, N=L*L for 2d).
-    - omega:            array of natural frequencies (shape (L,) for 1d or (L,L) for 2d; flattened is also accepted).
+    - topology:         "1d" (ring) or "2d" (square torus) or "3d", nearest-neighbor coupling.
+    - L:                system size (N=L for 1d, N=L*L for 2d, N=L*L*L for 3d).
+    - omega:            array of natural frequencies (shape (L,) for 1d or (L,L) for 2d, (L,L,L) for 2d; flattened is also accepted).
     - K:                coupling strength.
     - delta:            Sakaguchi phase-lag δ.
     - theta0:           initial phases (same shape as omega).
@@ -217,8 +312,15 @@ def kuramoto_sakaguchi_euler(
             L, omega, K, delta, theta0, T, Nt,
             startsampling, multsampling, stochastic, seed
         )
-    else:
+    elif topology == "2d":
         return kuramoto_sakaguchi_euler_2d(
             L, omega, K, delta, theta0, T, Nt,
             startsampling, multsampling, stochastic, seed
         )
+    elif topology == "3d":
+        return kuramoto_sakaguchi_euler_3d(
+            L, omega, K, delta, theta0, T, Nt,
+            startsampling, multsampling, stochastic, seed
+        )
+    else:
+        raise ValueError("topology must be '1d', '2d', or '3d'")
