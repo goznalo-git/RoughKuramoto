@@ -15,6 +15,9 @@ if sys.argv[1] == "0":
 elif sys.argv[1] == "atan5":
     delta = np.arctan(5)
     deltaname = "atan5"
+elif sys.argv[1] == "atan10":
+    delta = np.arctan(10)
+    deltaname = "atan10"
 
 print("TimeDep")
 

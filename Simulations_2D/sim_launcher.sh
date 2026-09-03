@@ -15,9 +15,14 @@
 source ../../../scientific_kernel/bin/activate   
 
 L_VALUES=(125 250 500)
-Ksto=2           # K=1  2024 paper (K = 2 for atan5 to avoid crossover, K = 5,10 direct crossover to EW in KPZ atan5)
-Kcol=80         # K=40 2023 paper (K = 80 to test the forgetting of initial conditions)
+Ksto=15           # K=1  2024 paper (K = 1,2 atan5 crossover to RD, 3 for atan5 to avoid crossover, K = 5,10 direct crossover to EW in KPZ atan5)
+Kcol=20         # K=40 2023 paper (K = 60, 80, 100 to test the forgetting of initial conditions)
 M=100
+
+###################
+# NOTE: the explicit Euler requires dt < 1/(4dK) with d dimensionality for convergence!!!!!!!!!!!!!!
+# The original sims are incorrect!
+########################
 
 
 ####################
@@ -34,16 +39,20 @@ for L in "${L_VALUES[@]}"; do
     # We use a unique log name for each L
         
     # Time dependent
-    nohup python -u int_sto.py atan5 $L $Ksto $M > Logs/TimeDep/out_atan5_${L}_${Ksto}_${M}.log 2>&1 &
+    # nohup python -u int_sto.py atan10 $L $Ksto $M > Logs/TimeDep/out_atan5_${L}_${Ksto}_${M}.log 2>&1 &
     sleep 2
-    nohup python -u int_sto.py 0 $L $Ksto $M > Logs/TimeDep/out_0_${L}_${Ksto}_${M}.log 2>&1 &
-    sleep 2
+    # nohup python -u int_sto.py atan5 $L $Ksto $M > Logs/TimeDep/out_atan5_${L}_${Ksto}_${M}.log 2>&1 &
+    # sleep 2
+    # nohup python -u int_sto.py 0 $L $Ksto $M > Logs/TimeDep/out_0_${L}_${Ksto}_${M}.log 2>&1 &
+    # sleep 2
     
     # Columnar (requires a much higher K to see saturation)
+    # nohup python -u int_col.py atan10 $L $Kcol $M  > Logs/Columnar/out_atan5_${L}_${Kcol}_${M}.log 2>&1 &
+    # sleep 2
     nohup python -u int_col.py atan5 $L $Kcol $M  > Logs/Columnar/out_atan5_${L}_${Kcol}_${M}.log 2>&1 &
-    sleep 2
+    # sleep 2
     nohup python -u int_col.py 0 $L $Kcol $M  > Logs/Columnar/out_0_${L}_${Kcol}_${M}.log 2>&1 &
-    sleep 2
+    # sleep 2
     
 done
 

@@ -50,105 +50,182 @@ def compute_surface_roughness(phases: np.ndarray) -> np.ndarray:
     roughness = np.sqrt(np.mean((phases - mean_phase[:, None])**2, axis=1))
     return roughness
     
+import numpy as np
 
-def compute_heightdifference_correlations(phases: np.ndarray) -> np.ndarray:
+
+def compute_heightdifference_correlations(
+    phases: np.ndarray,
+) -> np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Compute the height-difference correlation function G(r, t) for a
     Kuramoto–Sakaguchi simulation.
 
-    The height-difference correlation is defined as:
+    In one dimension, the height-difference correlation is defined as:
         G(r, t) = < [h(x + r, t) - h(x, t)]^2 >
     where the average is taken over spatial index x at fixed time t.
+
+    In two dimensions, the correlations along each lattice direction are:
+        G_1(r, t) = < [h(x + r, y, t) - h(x, y, t)]^2 >
+        G_2(r, t) = < [h(x, y + r, t) - h(x, y, t)]^2 >
+    where the averages are taken over both spatial coordinates.
+
+    Periodic boundary conditions are assumed.
 
     Parameters
     ----------
     phases : ndarray
-        Array of unwrapped phases with shape (Nt, N), interpreted as the
-        interface height h(x, t).
+        Array of unwrapped phases.
+
+        For a one-dimensional lattice, the expected shape is (Nt, N).
+
+        For a two-dimensional square lattice, the expected shape is
+        (Nt, L, L).
 
     Returns
     -------
     heightheight : ndarray of shape (Nt, N)
-        The correlation G(r, t) for separations r = 0, 1, ..., N-1 at each time t.
-        The r-th column corresponds to separation r.
+        For a one-dimensional lattice, G(r, t) for separations
+        r = 0, 1, ..., N-1.
+
+    heightheight_1, heightheight_2, heightheight_average : tuple of ndarrays
+        For a two-dimensional lattice, the directional correlations and
+        their average. Each array has shape (Nt, L).
     """
-    heightheight = np.empty((phases.shape[0], phases.shape[1]))
-    for r in range(phases.shape[1]):
-        heightheight[:,r] = np.mean((np.roll(phases, r, axis=1) - phases)**2, axis=1)
+    if phases.ndim == 2:
+        heightheight = np.empty((phases.shape[0], phases.shape[1]))
 
-    return heightheight
+        for r in range(phases.shape[1]):
+            heightheight[:, r] = np.mean(
+                (np.roll(phases, r, axis=1) - phases) ** 2,
+                axis=1,
+            )
+
+        return heightheight
+
+    if phases.ndim == 3:
+        if phases.shape[1] != phases.shape[2]:
+            raise ValueError(
+                "For a two-dimensional lattice, phases must have shape "
+                "(Nt, L, L)."
+            )
+
+        L = phases.shape[1]
+
+        heightheight_1 = np.empty((phases.shape[0], L))
+        heightheight_2 = np.empty((phases.shape[0], L))
+
+        for r in range(L):
+            heightheight_1[:, r] = np.mean(
+                (np.roll(phases, r, axis=1) - phases) ** 2,
+                axis=(1, 2),
+            )
+
+            heightheight_2[:, r] = np.mean(
+                (np.roll(phases, r, axis=2) - phases) ** 2,
+                axis=(1, 2),
+            )
+
+        heightheight_average = (
+            heightheight_1 + heightheight_2
+        ) / 2
+
+        return (
+            heightheight_1,
+            heightheight_2,
+            heightheight_average,
+        )
+
+    raise ValueError(
+        "phases must have shape (Nt, N) for a one-dimensional lattice "
+        "or (Nt, L, L) for a two-dimensional lattice."
+    )
 
 
-def compute_structure_factor(phases: np.ndarray) -> np.ndarray:
+def compute_structure_factor(
+    phases: np.ndarray,
+) -> np.ndarray | tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Compute the structure factor function S(k, t) for a
-    Kuramoto–Sakaguchi simulation.
+    Compute the structure factor S(k, t) for a Kuramoto–Sakaguchi
+    simulation.
 
-    The structure factor is defined as:
-        S(k, t) = < |hat(h)(k, t)|^2 >
-    where the average is taken over frequency index k at fixed time t.
+    In one dimension, the structure factor is:
+        S(k, t) = |hat(h)(k, t)|^2 / N
+
+    In two dimensions, a one-dimensional Fourier transform is performed
+    separately along each lattice direction. The resulting power spectrum
+    is averaged over the transverse spatial direction.
 
     Parameters
     ----------
     phases : ndarray
-        Array of unwrapped phases with shape (Nt, N), interpreted as the
-        interface height h(x, t).
+        Array of unwrapped phases.
+
+        For a one-dimensional lattice, the expected shape is (Nt, N).
+
+        For a two-dimensional square lattice, the expected shape is
+        (Nt, L, L).
 
     Returns
     -------
     structurefactor : ndarray of shape (Nt, N)
-        The correlation S(k, t) for frequencies k = 0, 1, ..., N-1 at each time t.
-        The k-th column corresponds to frequency k.
+        For a one-dimensional lattice, S(k, t) for frequencies
+        k = 0, 1, ..., N-1.
+
+    structurefactor_1, structurefactor_2,
+    structurefactor_average : tuple of ndarrays
+        For a two-dimensional lattice, the directional structure factors
+        and their average. Each array has shape (Nt, L).
     """
-    N = phases.shape[1]
+    if phases.ndim == 2:
+        N = phases.shape[1]
 
-    # Spatial Fourier transform along the lattice direction (axis=1)
-    hhat = np.fft.fft(phases, axis=1)
+        # Spatial Fourier transform along the lattice direction
+        hhat = np.fft.fft(phases, axis=1)
 
-    # Power spectrum (structure factor). Divide by N for the common FFT normalization.
-    structurefactor = (np.abs(hhat) ** 2) / N
-    
-    return structurefactor
+        # Power spectrum. Divide by N for the common FFT normalization.
+        structurefactor = (np.abs(hhat) ** 2) / N
 
+        return structurefactor
 
-def compute_phase_covariance(phases: np.ndarray) -> np.ndarray:
-    """
-    Compute the phase covariance function C(r, t) for a Kuramoto–Sakaguchi simulation.
+    if phases.ndim == 3:
+        if phases.shape[1] != phases.shape[2]:
+            raise ValueError(
+                "For a two-dimensional lattice, phases must have shape "
+                "(Nt, L, L)."
+            )
 
-    The phase covariance is defined as:
-        C(r, t) = < overline{φ(x, t) φ(x + r, t)} >  -  ( < overline{φ}(x, t) > )^2
-    where overline{...} denotes an average over the spatial index x at fixed time t
-    and <...> denotes an average over simulations.
+        L = phases.shape[1]
 
-    Note that, since the squaring is after the average over simulations, 
-    here we just compute the two terms separately and afterwards the averaging 
-    over simulations takes place, followed by the square and subtraction. 
+        # Fourier transform along the first spatial direction. The power
+        # spectrum is then averaged over the second spatial direction.
+        hhat_1 = np.fft.fft(phases, axis=1)
+        structurefactor_1 = np.mean(
+            np.abs(hhat_1) ** 2,
+            axis=2,
+        ) / L
 
-    Parameters
-    ----------
-    phases : ndarray
-        Array of (unwrapped) phases with shape (Nt, N), interpreted as φ(x, t).
+        # Fourier transform along the second spatial direction. The power
+        # spectrum is then averaged over the first spatial direction.
+        hhat_2 = np.fft.fft(phases, axis=2)
+        structurefactor_2 = np.mean(
+            np.abs(hhat_2) ** 2,
+            axis=1,
+        ) / L
 
-    Returns
-    -------
-    hprodh_average : ndarray of shape (Nt, N)
-        The spatial average of φ(x, t) φ(x + r, t) for separations r = 0, 1, ..., N-1 at each time t.
-        The r-th column corresponds to separation r.
-    h_average : ndarray of shape (Nt, )
-        The spatial average of φ(x, t) at each time t.
-    """
-    Nt, N = phases.shape
+        structurefactor_average = (
+            structurefactor_1 + structurefactor_2
+        ) / 2
 
-    # Spatial mean at each time: overline{φ(x,t)}
-    h_average = np.mean(phases, axis=1)  # shape (Nt,)
+        return (
+            structurefactor_1,
+            structurefactor_2,
+            structurefactor_average,
+        )
 
-    hprodh_average = np.empty((Nt, N), dtype=float)
-    for r in range(N):
-        # <φ(x,t) φ(x+r,t)>
-        hprodh_average[:, r] = np.mean(phases * np.roll(phases, r, axis=1), axis=1)
-
-    return hprodh_average, h_average
-
+    raise ValueError(
+        "phases must have shape (Nt, N) for a one-dimensional lattice "
+        "or (Nt, L, L) for a two-dimensional lattice."
+    )
 
 def compute_rescaled_phases(
     phases: np.ndarray,
@@ -160,6 +237,8 @@ def compute_rescaled_phases(
     Compute rescaled phases (fluctuations) as in:
         ϕ_j(Δt) = [δφ_j(t0 + Δt) - δφ_j(t0)] / (Δt)^β
     where δφ_j(t) = φ_j(t) - \bar{φ}(t) and \bar{φ}(t) is the spatial mean at time t.
+    
+    Note that it also works in 2D if the phases array is unraveled, e.g. shape = (Nt, L x L)/ 
 
     Parameters
     ----------

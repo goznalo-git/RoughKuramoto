@@ -51,7 +51,7 @@ def compute_rescaled_phases_at_index(
     return varphi
 
     
-def _estimate_moments_from_pdf(pdf_fn, grid_min=-20.0, grid_max=10.0, n=200_000):
+def _estimate_moments_from_pdf(pdf_fn, grid_min=-20.0, grid_max=10.0, n=200000):
     """
     Numerically estimate mean and variance from a pdf function on a grid.
     The bounds [-20, 10] are usually enough for TW; increase if needed.

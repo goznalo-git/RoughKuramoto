@@ -16,7 +16,7 @@ source ../../../scientific_kernel/bin/activate
 
 L_VALUES=(125)
 Ksto=15
-Kcol=60
+Kcol=150
 M=10
 
 

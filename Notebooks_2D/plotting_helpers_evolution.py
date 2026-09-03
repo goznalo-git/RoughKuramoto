@@ -20,7 +20,7 @@ alpha_s_dict = {"TimeDep": {"EW": 1/2, "KPZ": 1/2}, "Columnar": {"EW": 3/2, "KPZ
 alpha_loc_dict = {"TimeDep": {"EW": 1/2, "KPZ": 1/2}, "Columnar": {"EW": 1, "KPZ": 0.96}} # anomalous scaling, only for columnar noise
 beta_dict = {"TimeDep": {"EW": alpha_dict["TimeDep"]["EW"]/z_dict["TimeDep"]["EW"], "KPZ": alpha_dict["TimeDep"]["KPZ"]/z_dict["TimeDep"]["KPZ"]}, 
              "Columnar": {"EW": alpha_dict["Columnar"]["EW"]/z_dict["Columnar"]["EW"], "KPZ": alpha_dict["Columnar"]["KPZ"]/z_dict["Columnar"]["KPZ"]}}
-delta_to_label = {"0": "EW", "atan5": "KPZ"}
+delta_to_label = {"0": "EW", "atan5": "KPZ", "atan10": "KPZ"}
 
 # Markers for different system sizes
 markerdict = {125: "^", 250: "x", 500: "o", 1000: "s"}
@@ -32,7 +32,7 @@ vlinecolordict = {125: "tab:blue", 250: "tab:green", 500: "tab:orange", 1000: "t
 ##### ROUGHNESS #####
 #####################
 
-def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40], save=False):
+def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40], ts=None, save=False):
 
     fig, ax = plt.subplots(2, 2, figsize=(12,10))
     # fig.suptitle("Roughness evolution under different noise types")
@@ -75,6 +75,22 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40], save=False):
             ax[j,i].set_xscale('log')
             ax[j,i].set_yscale('log')
 
+                    
+            if ts:
+                for tsi in ts:
+                    # Extract coordinates (move Y up a bit)
+                    x1, x2 = t[tsi[0]], t[tsi[1]]
+                    y1, y2 = mean_roughness[tsi[0]]*1.05, mean_roughness[tsi[1]]*1.05
+                    
+                    # Calculate log-log slope
+                    slope = (np.log10(y2) - np.log10(y1)) / (np.log10(x2) - np.log10(x1))
+                    
+                    # Plotting
+                    ax[j,i].loglog([x1, x2], [y1, y2], 'k:', lw=1) # Slope line
+                    
+                    # Text placement (midpoint in log-space)
+                    ax[j,i].text(np.sqrt(x1*x2)*0.96, np.sqrt(y1*y2)*1.01, f'{slope:.2f}', color='k', ha='center', va='bottom')
+
     ax[0,0].set_title(f"Time-dependent ($K=${Ks[0]})")
     ax[0,1].set_title(f"Columnar ($K=${Ks[1]})")      
     ax[0,0].set_ylabel(r"EW  ($\delta=0$)", fontsize=12)
@@ -83,10 +99,10 @@ def plot_roughness_evolution(avg_df, T, tx, Ks=[1,40], save=False):
     # Scalings
     # ax[0,0].loglog(t[1:-5:], t[1:-5:]**(beta_dict["TimeDep"]["EW"]) /15, label=r"$\beta_{EW}=1/4$", linestyle="--", color="k")
     # ax[1,0].loglog(t[1:-5:], t[1:-5:]**(beta_dict["TimeDep"]["KPZ"]) /10, label=r"$\beta_{KPZ}=1/3$", linestyle="--", color="k")
-
     # ax[0,1].loglog(t[1:-12:], t[1:-12:]**(beta_dict["Columnar"]["EW"]) / 5, label=r"$\beta_{EW}=3/4$", linestyle="--", color="k")
     # ax[1,1].loglog(t[1:-12:], t[1:-12:]**(beta_dict["Columnar"]["KPZ"]) / 4, label=r"$\beta_{KPZ}\approx 0.7867$", linestyle="--", color="k")
 
+        
     ax[0,0].legend()
     ax[0,1].legend()
     ax[1,0].legend()
